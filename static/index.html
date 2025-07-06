@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Kurs Kripto (BTC/IDR & USDT/IDR) via Python WebSocket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0f1d;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            padding: 0 0px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #00bcd4;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            font-size: 2.2em;
+            position: relative;
+            display: inline-block;
+        }
+
+        /* Style baru untuk countdown */
+        #countdown-timer {
+            font-size: 5px;
+            color: #ffc107; /* Warna kuning untuk menonjolkan */
+            margin-top: 5px;
+            font-weight: 600;
+        }
+
+        .rate-value {
+            font-size: 15px;
+            font-weight: 700;
+            margin: 7px 0;
+            color: #e0e0e0;
+            transition: color 0.3s ease;
+        }
+
+        .rate-value.positive {
+            color: #8BC34A;
+        }
+
+        .rate-value.negative {
+            color: #FF5722;
+        }
+
+        .last-update, .detail-info {
+            font-size: 6px;
+            color: #aaa;
+            margin-top: 5px;
+        }
+
+        .ws-status-indicator {
+            position: absolute;
+            top: 54%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: gray;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .ws-status-indicator.connected {
+            background-color: #8BC34A;
+        }
+
+        .ws-status-indicator.disconnected {
+            background-color: #FF5722;
+        }
+
+        .ws-status-indicator.connecting {
+            background-color: #000;
+        }
+
+        .currency-boxes-wrapper {
+            margin-top : 20px;
+            margin-left: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            max-width: 400px;
+            min-width: 365px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 10px;
+            flex-wrap: wrap; /* Allow items to wrap to the next line */
+        }
+
+        .currency-box { /* General styling for all currency boxes */
+         margin-top: 7px;
+         border : 1px solid #000;
+         background-color: #000;
+         border-radius: 15px;
+         box-shadow: 0 0 5px 5px blue;
+         width: 170px;
+         padding-bottom: 10px;
+         flex-shrink: 0;
+         flex-grow: 0;
+         position: relative; /* Needed for absolute positioning within if necessary */
+        }
+
+        h2 {
+            color: #00bcd4;
+            margin-top: 11px;
+            margin-bottom: 0px;
+            font-size:15px;
+        }
+
+        /* New style for volume display in currency boxes */
+        .volume-display {
+            font-size: 5px;
+            color: #aaa;
+            margin-top: 5px;
+            transition: color 0.3s ease; /* Add transition for smooth color change */
+        }
+        /* Volume color classes for currency boxes */
+        .volume-display.positive {
+            color: #8BC34A; /* Green for increasing volume */
+        }
+        .volume-display.negative {
+            color: #FF5722; /* Red for decreasing volume */
+        }
+        
+        .dibuat-oleh h3{
+         font-size: 5px;
+         text-align: center;
+         font-weight: bold;
+         margin-top: 70px;
+        }
+
+        /* Styling for the new volume table */
+        .volume-table-container {
+            width: 100%;
+            max-width: 355px; /* Match currency-boxes-wrapper width */
+            margin-top: 50px;
+            margin-left: 10px;
+            background-color: #000;
+            border-radius: 15px;
+            box-shadow: 0 0 5px 5px blue;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        .volume-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        .volume-table th, .volume-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+
+        .volume-table th {
+            background-color: #00bcd4;
+            color: #0f0f1d;
+            font-weight: 600;
+        }
+
+        .volume-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .volume-table .positive {
+            color: #8BC34A;
+        }
+
+        .volume-table .negative {
+            color: #FF5722;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Kurs Crypt<span style="position: relative;">o<div id="ws-status-indicator" class="ws-status-indicator connecting"></div></span></h1>
+        <p id="live-datetime" style="font-size: 10px; color: #aaa; margin-top: 5px;"></p>
+        <p id="countdown-timer">Memuat hitungan mundur...</p>
+
+       <a href="BTC_IDR-2.html" style="text-decoration:none">
+        <div class="currency-boxes-wrapper">
+            <div class = "currency-box btc-idr">
+                <h2>Bitcoin (BTC)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="btc-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="btc-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="btc-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="btc-volume-24h-display">Volume (24j): <span id="btc-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="btc-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+       </a>
+
+
+       <a href="ETH_IDR-2.html" style="text-decoration:none">
+            <div class="currency-box eth-idr">
+                <h2>Ethereum (ETH)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="eth-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="eth-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="eth-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="eth-volume-24h-display">Volume (24j): <span id="eth-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="eth-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+       </a>
+       
+       
+        <a href="XRP_IDR-2.html" style="text-decoration:none">
+            <div class="currency-box xrp-idr">
+                <h2>Ripple (XRP)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="xrp-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="xrp-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="xrp-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="xrp-volume-24h-display">Volume (24j): <span id="xrp-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="xrp-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="ETC_IDR-2.html" style="text-decoration:none">
+            <div class="currency-box etc-idr">
+                <h2>Ethereum Classic </h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="etc-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="etc-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="etc-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="etc-volume-24h-display">Volume (24j): <span id="etc-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="etc-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+        </a>
+
+       <a href="" style="text-decoration:none">
+            <div class="currency-box usdt-idr">
+                <h2>USDT (USDT)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="usdt-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="usdt-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="usdt-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="usdt-volume-24h-display">Volume (24j): <span id="usdt-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="usdt-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+       </a>
+
+       <a href="" style="text-decoration:none">
+            <div class="currency-box doge-idr">
+                <h2>Dogecoin (DOGE)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="doge-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="doge-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="doge-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="doge-volume-24h-display">Volume (24j): <span id="doge-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="doge-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+            </div>
+       </a>
+
+       <div class="volume-table-container">
+           <h2>Volume Perdagangan 24 Jam</h2>
+           <table class="volume-table">
+               <thead>
+                   <tr>
+                       <th>Koin</th>
+                       <th>Volume (24j)</th>
+                   </tr>
+               </thead>
+               <tbody>
+                   <tr>
+                       <td>Bitcoin (BTC)</td>
+                       <td id="table-btc-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>Ethereum (ETH)</td>
+                       <td id="table-eth-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>Ripple (XRP)</td>
+                       <td id="table-xrp-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>Ethereum Classic (ETC)</td>
+                       <td id="table-etc-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>USDT (USDT)</td>
+                       <td id="table-usdt-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>Dogecoin (DOGE)</td>
+                       <td id="table-doge-volume-24h">Memuat...</td>
+                   </tr>
+               </tbody>
+           </table>
+       </div>
+
+       <div class="dibuat-oleh">
+          <h3>
+             @by:Deni_Sulianto
+          </h3>
+       </div>
+    </div>
+
+<script>
+    // NEW: Global variables to store the last 24h volume for each currency
+    let lastBtcVolume24h = 0;
+    let lastUsdtVolume24h = 0;
+    let lastEthVolume24h = 0;
+    let lastDogeVolume24h = 0;
+    let lastXrpVolume24h = 0;
+    let lastEtcVolume24h = 0;
+
+
+    const btcIdrRateElement = document.getElementById('btc-idr-rate');
+    const btcHighPriceElement = document.getElementById('btc-high-price');
+    const btcLowPriceElement = document.getElementById('btc-low-price');
+    const btcVolume24hElement = document.getElementById('btc-volume-24h');
+    const btcVolume24hDisplay = document.getElementById('btc-volume-24h-display');
+    const btcLastUpdateElement = document.getElementById('btc-last-update');
+    let lastBtcIdrRate = 0;
+    // NEW: Table element for BTC volume
+    const tableBtcVolume24hElement = document.getElementById('table-btc-volume-24h');
+
+
+    const usdtIdrRateElement = document.getElementById('usdt-idr-rate');
+    const usdtHighPriceElement = document.getElementById('usdt-high-price');
+    const usdtLowPriceElement = document.getElementById('usdt-low-price');
+    const usdtVolume24hElement = document.getElementById('usdt-volume-24h');
+    const usdtVolume24hDisplay = document.getElementById('usdt-volume-24h-display');
+    const usdtLastUpdateElement = document.getElementById('usdt-last-update');
+    let lastUsdtIdrRate = 0;
+    // NEW: Table element for USDT volume
+    const tableUsdtVolume24hElement = document.getElementById('table-usdt-volume-24h');
+
+
+    const ethIdrRateElement = document.getElementById('eth-idr-rate');
+    const ethHighPriceElement = document.getElementById('eth-high-price');
+    const ethLowPriceElement = document.getElementById('eth-low-price');
+    const ethVolume24hElement = document.getElementById('eth-volume-24h');
+    const ethVolume24hDisplay = document.getElementById('eth-volume-24h-display');
+    const ethLastUpdateElement = document.getElementById('eth-last-update');
+    let lastEthIdrRate = 0;
+    // NEW: Table element for ETH volume
+    const tableEthVolume24hElement = document.getElementById('table-eth-volume-24h');
+
+
+    const dogeIdrRateElement = document.getElementById('doge-idr-rate');
+    const dogeHighPriceElement = document.getElementById('doge-high-price');
+    const dogeLowPriceElement = document.getElementById('doge-low-price');
+    const dogeVolume24hElement = document.getElementById('doge-volume-24h');
+    const dogeVolume24hDisplay = document.getElementById('doge-volume-24h-display');
+    const dogeLastUpdateElement = document.getElementById('doge-last-update');
+    let lastDogeIdrRate = 0;
+    // NEW: Table element for DOGE volume
+    const tableDogeVolume24hElement = document.getElementById('table-doge-volume-24h');
+
+
+    const xrpIdrRateElement = document.getElementById('xrp-idr-rate');
+    const xrpHighPriceElement = document.getElementById('xrp-high-price');
+    const xrpLowPriceElement = document.getElementById('xrp-low-price');
+    const xrpVolume24hElement = document.getElementById('xrp-volume-24h');
+    const xrpVolume24hDisplay = document.getElementById('xrp-volume-24h-display');
+    const xrpLastUpdateElement = document.getElementById('xrp-last-update');
+    let lastXrpIdrRate = 0;
+    // NEW: Table element for XRP volume
+    const tableXrpVolume24hElement = document.getElementById('table-xrp-volume-24h');
+
+
+    const etcIdrRateElement = document.getElementById('etc-idr-rate');
+    const etcHighPriceElement = document.getElementById('etc-high-price');
+    const etcLowPriceElement = document.getElementById('etc-low-price');
+    const etcVolume24hElement = document.getElementById('etc-volume-24h');
+    const etcVolume24hDisplay = document.getElementById('etc-volume-24h-display');
+    const etcLastUpdateElement = document.getElementById('etc-last-update');
+    let lastEtcIdrRate = 0;
+    // NEW: Table element for ETC volume
+    const tableEtcVolume24hElement = document.getElementById('table-etc-volume-24h');
+
+
+    const wsStatusIndicator = document.getElementById('ws-status-indicator');
+    const liveDatetimeElement = document.getElementById('live-datetime');
+    const countdownTimerElement = document.getElementById('countdown-timer');
+
+    const websocketUrl = "ws://localhost:8765";
+
+    let ws;
+
+    function formatPrice(price, includeCurrency = true) {
+        const numericPrice = parseFloat(price);
+        if (isNaN(numericPrice)) {
+            return includeCurrency ? `Rp N/A` : `N/A`;
+        }
+        const formatted = numericPrice.toLocaleString('id-ID', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 8
+        });
+        return includeCurrency ? `Rp ${formatted}` : formatted;
+    }
+
+    function formatVolume(volume) {
+        const numericVolume = parseFloat(volume);
+        if (isNaN(numericVolume)) {
+            return `N/A`;
+        }
+        return numericVolume.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 8 });
+    }
+
+    function updateLiveDateTime() {
+        const now = new Date();
+        const options = {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: false
+        };
+        liveDatetimeElement.textContent = now.toLocaleDateString('id-ID', options);
+    }
+
+    function updateCountdown() {
+        const now = new Date();
+        const targetHour = 7;
+
+        let targetDate = new Date(now);
+        targetDate.setHours(targetHour, 0, 0, 0);
+
+        if (now.getTime() > targetDate.getTime()) {
+            targetDate.setDate(targetDate.getDate() + 1);
+        }
+
+        const timeLeftMs = targetDate.getTime() - now.getTime();
+
+        const hours = Math.floor((timeLeftMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeftMs % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeftMs % (1000 * 60)) / 1000);
+
+        const formattedCountdown = `${String(hours).padStart(2, '0')} jam ${String(minutes).padStart(2, '0')} menit ${String(seconds).padStart(2, '0')} menuju pergantian hari pasar`;
+        countdownTimerElement.textContent = formattedCountdown;
+    }
+
+    function setStatusIndicator(status) {
+        wsStatusIndicator.classList.remove('connected', 'disconnected', 'connecting');
+        wsStatusIndicator.classList.add(status);
+    }
+
+    function updateVolumeTable(symbol, volume, lastKnownVolume, tableElement) {
+        const currentVolume = parseFloat(volume);
+        tableElement.textContent = formatVolume(currentVolume);
+        tableElement.classList.remove('positive', 'negative'); // Remove existing classes
+
+        if (lastKnownVolume !== 0) {
+            if (currentVolume > lastKnownVolume) {
+                tableElement.classList.add('positive'); // Volume increased
+            } else if (currentVolume < lastKnownVolume) {
+                tableElement.classList.add('negative'); // Volume decreased
+            }
+        } else {
+            // If it's the first data point, default to positive (or no color)
+            tableElement.classList.add('positive');
+        }
+
+        // Update last known volume
+        if (symbol === "BTC/IDR") lastBtcVolume24h = currentVolume;
+        else if (symbol === "USDT/IDR") lastUsdtVolume24h = currentVolume;
+        else if (symbol === "ETH/IDR") lastEthVolume24h = currentVolume;
+        else if (symbol === "DOGE/IDR") lastDogeVolume24h = currentVolume;
+        else if (symbol === "XRP/IDR") lastXrpVolume24h = currentVolume;
+        else if (symbol === "ETC/IDR") lastEtcVolume24h = currentVolume;
+    }
+
+
+    function connectWebSocket() {
+        setStatusIndicator('connecting');
+
+        ws = new WebSocket(websocketUrl);
+
+        ws.onopen = () => {
+            console.log('Terhubung ke server WebSocket Python');
+            setStatusIndicator('connected');
+        };
+
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            console.log("Received data:", data);
+
+            if (data && data.symbol) {
+                const updateTime = `Terakhir diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
+
+                let targetRateElement, targetLastUpdateElement, targetHighPriceElement, targetLowPriceElement, targetVolume24hElement, targetVolume24hDisplayElement, lastKnownRate, lastKnownVolume24h, tableVolumeElement;
+                
+                if (data.symbol === "BTC/IDR") {
+                    targetRateElement = btcIdrRateElement;
+                    targetLastUpdateElement = btcLastUpdateElement;
+                    targetHighPriceElement = btcHighPriceElement;
+                    targetLowPriceElement = btcLowPriceElement;
+                    targetVolume24hElement = btcVolume24hElement;
+                    targetVolume24hDisplayElement = btcVolume24hDisplay;
+                    lastKnownRate = lastBtcIdrRate;
+                    lastKnownVolume24h = lastBtcVolume24h;
+                    tableVolumeElement = tableBtcVolume24hElement;
+                } else if (data.symbol === "USDT/IDR") {
+                    targetRateElement = usdtIdrRateElement;
+                    targetLastUpdateElement = usdtLastUpdateElement;
+                    targetHighPriceElement = usdtHighPriceElement;
+                    targetLowPriceElement = usdtLowPriceElement;
+                    targetVolume24hElement = usdtVolume24hElement;
+                    targetVolume24hDisplayElement = usdtVolume24hDisplay;
+                    lastKnownRate = lastUsdtIdrRate;
+                    lastKnownVolume24h = lastUsdtVolume24h;
+                    tableVolumeElement = tableUsdtVolume24hElement;
+                } else if (data.symbol === "ETH/IDR") {
+                    targetRateElement = ethIdrRateElement;
+                    targetLastUpdateElement = ethLastUpdateElement;
+                    targetHighPriceElement = ethHighPriceElement;
+                    targetLowPriceElement = ethLowPriceElement;
+                    targetVolume24hElement = ethVolume24hElement;
+                    targetVolume24hDisplayElement = ethVolume24hDisplay;
+                    lastKnownRate = lastEthIdrRate;
+                    lastKnownVolume24h = lastEthVolume24h;
+                    tableVolumeElement = tableEthVolume24hElement;
+                } else if (data.symbol === "DOGE/IDR") {
+                    targetRateElement = dogeIdrRateElement;
+                    targetLastUpdateElement = dogeLastUpdateElement;
+                    targetHighPriceElement = dogeHighPriceElement;
+                    targetLowPriceElement = dogeLowPriceElement;
+                    targetVolume24hElement = dogeVolume24hElement;
+                    targetVolume24hDisplayElement = dogeVolume24hDisplay;
+                    lastKnownRate = lastDogeIdrRate;
+                    lastKnownVolume24h = lastDogeVolume24h;
+                    tableVolumeElement = tableDogeVolume24hElement;
+                } else if (data.symbol === "XRP/IDR") {
+                    targetRateElement = xrpIdrRateElement;
+                    targetLastUpdateElement = xrpLastUpdateElement;
+                    targetHighPriceElement = xrpHighPriceElement;
+                    targetLowPriceElement = xrpLowPriceElement;
+                    targetVolume24hElement = xrpVolume24hElement;
+                    targetVolume24hDisplayElement = xrpVolume24hDisplay;
+                    lastKnownRate = lastXrpIdrRate;
+                    lastKnownVolume24h = lastXrpVolume24h;
+                    tableVolumeElement = tableXrpVolume24hElement;
+                } else if (data.symbol === "ETC/IDR") {
+                    targetRateElement = etcIdrRateElement;
+                    targetLastUpdateElement = etcLastUpdateElement;
+                    targetHighPriceElement = etcHighPriceElement;
+                    targetLowPriceElement = etcLowPriceElement;
+                    targetVolume24hElement = etcVolume24hElement;
+                    targetVolume24hDisplayElement = etcVolume24hDisplay;
+                    lastKnownRate = lastEtcIdrRate;
+                    lastKnownVolume24h = lastEtcVolume24h;
+                    tableVolumeElement = tableEtcVolume24hElement;
+                }
+
+
+                if (targetRateElement) {
+                    // Update Price and apply color based on change
+                    if (data.price) {
+                        const currentRate = parseFloat(data.price);
+                        const formattedRate = `Rp ${currentRate.toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+                        targetRateElement.classList.remove('positive', 'negative');
+                        if (lastKnownRate !== 0) {
+                            if (currentRate > lastKnownRate) {
+                                targetRateElement.classList.add('positive');
+                            } else if (currentRate < lastKnownRate) {
+                                targetRateElement.classList.add('negative');
+                            }
+                        }
+                        targetRateElement.textContent = formattedRate;
+                        if (data.symbol === "BTC/IDR") lastBtcIdrRate = currentRate;
+                        else if (data.symbol === "USDT/IDR") lastUsdtIdrRate = currentRate;
+                        else if (data.symbol === "ETH/IDR") lastEthIdrRate = currentRate;
+                        else if (data.symbol === "DOGE/IDR") lastDogeIdrRate = currentRate;
+                        else if (data.symbol === "XRP/IDR") lastXrpIdrRate = currentRate;
+                        else if (data.symbol === "ETC/IDR") lastEtcIdrRate = currentRate;
+                    }
+
+                    targetLastUpdateElement.textContent = updateTime;
+
+                    if (data.high_price) targetHighPriceElement.textContent = formatPrice(data.high_price);
+                    if (data.low_price) targetLowPriceElement.textContent = formatPrice(data.low_price);
+
+                    // Update 24h volume for currency box and apply color based on change
+                    if (data.volume_24h) {
+                        const currentVolume = parseFloat(data.volume_24h);
+                        targetVolume24hElement.textContent = formatVolume(currentVolume);
+
+                        targetVolume24hDisplayElement.classList.remove('positive', 'negative'); // Remove existing classes
+
+                        if (lastKnownVolume24h !== 0) {
+                            if (currentVolume > lastKnownVolume24h) {
+                                targetVolume24hDisplayElement.classList.add('positive'); // Volume increased
+                            } else if (currentVolume < lastKnownVolume24h) {
+                                targetVolume24hDisplayElement.classList.add('negative'); // Volume decreased
+                            }
+                        } else {
+                            // If it's the first data point, default to positive (or no color)
+                            targetVolume24hDisplayElement.classList.add('positive');
+                        }
+
+                        // Update last known volume
+                        if (data.symbol === "BTC/IDR") lastBtcVolume24h = currentVolume;
+                        else if (data.symbol === "USDT/IDR") lastUsdtVolume24h = currentVolume;
+                        else if (data.symbol === "ETH/IDR") lastEthVolume24h = currentVolume;
+                        else if (data.symbol === "DOGE/IDR") lastDogeVolume24h = currentVolume;
+                        else if (data.symbol === "XRP/IDR") lastXrpVolume24h = currentVolume;
+                        else if (data.symbol === "ETC/IDR") lastEtcVolume24h = currentVolume;
+
+                        // NEW: Update the volume in the dedicated table
+                        if (tableVolumeElement) {
+                            updateVolumeTable(data.symbol, data.volume_24h, lastKnownVolume24h, tableVolumeElement);
+                        }
+                    }
+                }
+            } else {
+                console.warn("Received invalid data format or missing symbol:", data);
+            }
+        };
+
+        ws.onclose = (event) => {
+            console.warn('Koneksi WebSocket terputus:', event);
+            setStatusIndicator('disconnected');
+            setTimeout(connectWebSocket, 3000);
+        };
+
+        ws.onerror = (error) => {
+            console.error('WebSocket Error:', error);
+            setStatusIndicator('disconnected');
+            ws.close();
+        };
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        connectWebSocket();
+        updateLiveDateTime();
+        setInterval(updateLiveDateTime, 1000);
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    });
+</script>
+
+</body>
+</html>
