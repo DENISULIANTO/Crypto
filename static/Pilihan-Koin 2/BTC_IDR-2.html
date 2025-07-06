@@ -1,0 +1,2553 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Kurs Crypto (BTC/IDR) via Python WebSocket</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #0f0f1d;
+            color: #e0e0e0;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 5px;
+            box-sizing: border-box;
+            flex-direction: column;
+        }
+        
+        .dibuat-oleh h3{
+         font-size: 5px;
+         text-align: center;
+         font-weight: bold;
+         margin-top: 70px;
+        }
+
+
+        .main-content-wrapper {
+            display: flex;
+            flex-direction: row; /* Mengatur tata letak horizontal */
+            gap: 20px; /* Jarak antara tabel dan grafik */
+            width: 100%;
+            max-width: 900px; /* Sesuaikan lebar maksimum */
+            justify-content: center; /* Pusatkan konten */
+            align-items: flex-start; /* Sejajarkan di bagian atas */
+            padding: 0 0px;
+            box-sizing: border-box;
+        }
+        .main-content-wrapper h2{
+         margin-top : 50px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px; /* Atur lebar container utama untuk tabel */
+            text-align: center;
+            padding: 0 0px;
+            box-sizing: border-box;
+        }
+
+        h1 {
+            color: #00bcd4;
+            margin-top: 10px;
+            margin-bottom: 0px;
+            font-size: 2.2em;
+            position: relative;
+            display: inline-block;
+        }
+
+        .rate-value {
+            font-size: 35px;
+            font-weight: 700;
+            margin: 7px 0;
+            color: #e0e0e0;
+            transition: color 0.3s ease;
+        }
+
+        .rate-value.positive {
+            color: #00B050;
+        }
+
+        .rate-value.negative {
+            color: #FF0000;
+        }
+
+        .detail-info-1 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 110px;
+            left: 23px;
+        }
+
+        .detail-info-2 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 130px;
+            left: 23px;
+        }
+
+        .detail-info-3 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 150px;
+            left: 23px;
+        }
+
+        .last-update {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 170px;
+            left: 23px;
+        }
+
+        .detail-info-4 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 110px;
+            left: 200px;
+        }
+
+        .detail-info-5 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 130px;
+            left: 200px;
+        }
+
+        .detail-info-6 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 150px;
+            left: 200px;
+        }
+
+        .detail-info-7 {
+            font-size: 5px;
+            color: #aaa;
+            position: absolute;
+            top: 170px;
+            left: 200px;
+        }
+
+
+
+        .ws-status-indicator {
+            position: absolute;
+            top: 54%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: gray;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        .ws-status-indicator.connected {
+            background-color: #23df1d;
+            border: 1px solid #000;
+        }
+
+        .ws-status-indicator.disconnected {
+            background-color: #FF0000;
+            border: 1px solid #000;
+        }
+
+        .ws-status-indicator.connecting {
+            background-color: #000;
+        }
+
+        footer {
+            margin-top: 120px;
+            font-size: 0.8em;
+            color: #777;
+            text-align: center;
+        }
+
+        .currency-boxes-wrapper {
+            margin-top : 20px;
+            margin-left: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+            max-width: 400px;
+            min-width: 365px;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .currency-box {
+         margin-top: 7px;
+         border : 1px solid #3a3a3a;
+         border-radius: 15px;
+         box-shadow: 0px 0px 8px #161275;
+         width: 372px;
+         height: 190px;
+         padding-bottom: 10px;
+         flex-shrink: 0;
+         flex-grow: 0;
+         position: relative;
+        }
+
+        h2 {
+            color: #00bcd4;
+            text-align: center;
+            margin-top: 11px;
+            margin-bottom: 0px;
+            font-size:15px;
+        }
+
+        .percentage-change.positive {
+            color: #00B050; /* Green */
+        }
+
+        .percentage-change.negative {
+            color: #FF0000; /* Red */
+        }
+
+        /* Kelas baru untuk warna di tabel history */
+        .history-value.positive {
+            color: #00B050; /* Green */
+        }
+        .history-value.negative {
+            color: #FF0000; /* Red */
+        }
+
+        /* Kelas untuk Perubahan% di tabel history */
+        .perubahan-percentage.positive { /* Nama kelas yang lebih CSS-friendly */
+            color: #00B050; /* Green */
+        }
+        .perubahan-percentage.negative {
+            color: #FF0000; /* Red */
+        }
+
+        .history-section, .order-book-section, .ema-section, .ema-percentage-section, .bollinger-bands-section, .signal-table-section, .bollinger-bands-percentage-section { /* Tambahkan .signal-table-section dan .bollinger-bands-percentage-section */
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .history-section h2, .order-book-section h2, .ema-section h2, .ema-percentage-section h2, .bollinger-bands-section h2, .signal-table-section h2, .bollinger-bands-percentage-section h2 { /* Tambahkan .signal-table-section h2 dan .bollinger-bands-percentage-section h2 */
+            font-size: 15px;
+            color: #00bcd4;
+            margin-bottom: 10px;
+        }
+
+        .history-table, .order-book-table, .ema-table, .ema-percentage-table, .bollinger-bands-table, .signal-table, .bollinger-bands-percentage-table { /* Tambahkan .signal-table dan .bollinger-bands-percentage-table */
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #161275;
+            box-shadow: 0px 0px 8px #161275;
+            border-radius: 10px;
+            overflow: hidden;
+            font-size: 8px;
+            margin-bottom: 20px;
+        }
+
+        .history-table th, .history-table td,
+        .order-book-table th, .order-book-table td,
+        .ema-table th, .ema-table td,
+        .ema-percentage-table th, .ema-percentage-table td,
+        .bollinger-bands-table th, .bollinger-bands-table td,
+        .signal-table th, .signal-table td,
+        .bollinger-bands-percentage-table th, .bollinger-bands-percentage-table td { /* Tambahkan .signal-table th, .signal-table td dan .bollinger-bands-percentage-table th, .bollinger-bands-percentage-table td */
+            padding: 2px 2px;
+            text-align: center;
+            border-bottom: 1px solid #333;
+            background-color: #020116;
+        }
+
+        .history-table th, .order-book-table th, .ema-table th, .ema-percentage-table th, .bollinger-bands-table th, .signal-table th, .bollinger-bands-percentage-table th { /* Tambahkan .signal-table th dan .bollinger-bands-percentage-table th */
+            background-color: #1a1a2e;
+            color: #e0e0e0;
+            font-weight: normal; /* Mengubah font-weight: ; menjadi normal */
+            font-size: 6px;
+        }
+
+        .history-table tr:last-child td,
+        .order-book-table tr:last-child td,
+        .ema-table tr:last-child td,
+        .ema-percentage-table tr:last-child td,
+        .bollinger-bands-table tr:last-child td,
+        .signal-table tr:last-child td,
+        .bollinger-bands-percentage-table tr:last-child td { /* Tambahkan .signal-table tr:last-child td dan .bollinger-bands-percentage-table tr:last-child td */
+            border-bottom: none;
+        }
+
+        .history-table tbody tr:hover,
+        .order-book-table tbody tr:hover,
+        .ema-table tbody tr:hover,
+        .ema-percentage-table tbody tr:hover,
+        .bollinger-bands-table tbody tr:hover,
+        .signal-table tbody tr:hover,
+        .bollinger-bands-percentage-table tbody tr:hover { /* Tambahkan .signal-table tbody tr:hover dan .bollinger-bands-percentage-table tbody tr:hover */
+            background-color: #1a1a2e;
+            font-size: 5px;
+        }
+
+        .history-table .date-column, .ema-table .date-column, .ema-percentage-table .date-column, .bollinger-bands-table .date-column, .signal-table .date-column, .bollinger-bands-percentage-table .date-column { /* Tambahkan .signal-table .date-column dan .bollinger-bands-percentage-table .date-column */
+            text-align: center;
+            width: 20px;
+            /* Tambahkan style ini untuk membuat kolom tanggal bisa diklik */
+            cursor: pointer;
+            text-decoration: none;
+            color: #e0e0e0; /* Warna tautan */
+        }
+        
+        /* Gaya baru untuk kolom EMA yang bisa diklik */
+        .ema-header-clickable {
+            cursor: pointer;
+            color: #00bcd4; /* Warna untuk menunjukkan bisa diklik */
+            text-decoration: underline;
+        }
+        
+        /* Gaya baru untuk kolom Bollinger Bands yang bisa diklik */
+        .bollinger-bands-header-clickable {
+            cursor: pointer;
+            color: #00bcd4; /* Warna untuk menunjukkan bisa diklik */
+            text-decoration: underline;
+        }
+
+        /* Gaya untuk indikator persilangan */
+        .ema-crossing-buy, .bb-signal-buy { /* Menambahkan .bb-signal-buy */
+            color: #00B050; /* Hijau untuk sinyal beli */
+            font-weight: bold;
+        }
+        .ema-crossing-sell, .bb-signal-sell { /* Menambahkan .bb-signal-sell */
+            color: #FF0000; /* Merah untuk sinyal jual */
+            font-weight: bold;
+        }
+
+        /* Gaya untuk persentase EMA di tabel baru */
+        .ema-percentage.positive, .bb-percentage.positive { /* Tambahkan .bb-percentage.positive */
+            color: #00B050;
+        }
+        .ema-percentage.negative, .bb-percentage.negative { /* Tambahkan .bb-percentage.negative */
+            color: #FF0000;
+        }
+
+        .history-table .harga-tertinggi, .order-book-table .harga-beli {
+            text-align: center;
+            width: 60px;
+        }
+        .history-table .harga-terendah, .order-book-table .harga-jual {
+            text-align: center;
+            width: 60px;
+        }
+        .change-column {
+            text-align: center;
+            width: 40px;
+        }
+
+        .currency-boxes-wrapper {
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Gaya untuk modal filter tanggal */
+        .modal {
+            display: none; /* Tersembunyi secara default */
+            position: fixed; /* Tetap di layar saat scroll */
+            z-index: 1000; /* Di atas elemen lain */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Aktifkan scroll jika konten terlalu besar */
+            background-color: rgba(0,0,0,0.7); /* Latar belakang gelap */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #1a1a2e;
+            margin: auto; /* Pusatkan secara vertikal dan horizontal */
+            padding: 20px;
+            border: 1px solid #00bcd4;
+            width: 90%; /* Bisa disesuaikan */
+            max-width: 400px; /* Batas lebar */
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            color: #e0e0e0;
+        }
+
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .control-group.date-selection, .control-group.ema-selection, .control-group.bollinger-bands-selection { /* Tambah kelas baru */
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+
+        .control-group.date-selection label, .control-group.ema-selection label, .control-group.bollinger-bands-selection label { /* Tambah kelas baru */
+            display: block;
+            margin-bottom: 8px;
+            font-size: 1em;
+            color: #00bcd4;
+        }
+
+        .date-inputs, .ema-inputs, .bollinger-bands-inputs { /* Tambah kelas baru */
+            display: flex;
+            flex-direction: column; /* Ubah ke kolom untuk tata letak vertikal */
+            gap: 10px; /* Spasi antar elemen */
+        }
+
+        .date-inputs input[type="date"], .ema-inputs input[type="number"], .bollinger-bands-inputs input[type="number"] { /* Tambah kelas baru */
+            padding: 8px;
+            border: 1px solid #00bcd4;
+            border-radius: 4px;
+            font-size: 1em;
+            background-color: #0f0f1d;
+            color: #e0e0e0;
+            width: calc(100% - 16px); /* Kurangi padding */
+        }
+
+        .date-inputs #tanggalSeparator {
+            text-align: center;
+            font-size: 1em;
+            margin: 5px 0;
+        }
+
+        .date-inputs button, .ema-inputs button, .bollinger-bands-inputs button { /* Tambah kelas baru */
+            padding: 10px 15px;
+            background-color: #00bcd4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 5px; /* Spasi antar tombol */
+        }
+
+        .date-inputs button:hover, .ema-inputs button:hover, .bollinger-bands-inputs button:hover { /* Tambah kelas baru */
+            background-color: #0097a7;
+        }
+        #deleteHistoryBtn {
+            background-color: #dc3545; /* Warna merah untuk tombol hapus */
+            margin-top: 10px; /* Spasi dari tombol di atasnya */
+        }
+
+        #deleteHistoryBtn:hover {
+            background-color: #c82333;
+        }
+        /* Menggabungkan style untuk .grafik-ema-btc dan signal-color-chart-container */
+        .signal-data-and-chart-wrapper {
+            display: flex; /* Untuk menata elemen secara horizontal */
+            gap: 20px; /* Jarak antara data dan chart */
+            margin-top: 5px;
+            align-items: flex-start; /* Sejajarkan di bagian atas */
+            justify-content: center;
+            width: 300px; /* Pastikan wrapper mengambil lebar penuh yang tersedia */
+        }
+        .signal-data-and-chart-wrapper-2 {
+            display: flex; /* Untuk menata elemen secara horizontal */
+            gap: 20px; /* Jarak antara data dan chart */
+            margin-top: 20px;
+            align-items: flex-start; /* Sejajarkan di bagian atas */
+            justify-content: center;
+            width: 300px; /* Pastikan wrapper mengambil lebar penuh yang tersedia */
+        }
+        .grafik-ema-btc {
+            background: #0f0f1d;
+            padding: 10px;
+            width: 150px; /* Sesuaikan lebar agar lebih optimal */
+            height: 15px;
+            flex-shrink: 0; /* Mencegah elemen menyusut */
+        }
+        .grafik-ema-btc input {
+            font-size: 10px;
+            border-color: #92929291;
+            border-radius: 10px;
+            color: #fff;
+            background: #000;
+            width: calc(100% - 45px); /* Sesuaikan lebar input */
+            height: 15px;
+            margin-top: 4px;
+        }
+        .grafik-ema-btc 
+        #data-muncul-indicator{
+         color:#0f0f1d;
+        }
+
+        /* Gaya baru untuk menampilkan data sinyal */
+        #data-muncul-ema, #data-muncul-bb ,#data-muncul-indicator{ /* Tambahkan #data-muncul-bb */
+            font-size: 5px;
+            font-weight: bold;
+            color: #fff; /* Warna yang sama dengan judul */
+            margin-top: 20px;
+            min-height: 1.5em; /* Memberikan tinggi minimum agar tidak bergeser */
+            display: block; /* Pastikan elemen mengambil ruangnya */
+            text-align: center;
+        }
+        
+        #data-muncul-ema .signal-value, #data-muncul-bb .signal-value, { /* Tambahkan #data-muncul-bb */
+            font-size: 10px; /* Ukuran font lebih besar untuk nilai */
+            font-weight: bold;
+            margin: 5px 0;
+            display: block; /* Pastikan setiap nilai berada di baris baru */
+        }
+
+        #data-muncul-ema .signal-label, #data-muncul-bb .signal-label{ /* Tambahkan #data-muncul-bb */
+            font-size: 5px;
+            color: #555555;
+        }
+
+        #data-muncul-ema .positive-signal, #data-muncul-bb .positive-signal { /* Tambahkan #data-muncul-bb */
+            color: #00B050; /* Green */
+        }
+
+        #data-muncul-ema .negative-signal, #data-muncul-bb .negative-signal: #FF0000; /* Red */
+        }
+
+        #data-muncul-ema .neutral-signal, #data-muncul-bb .neutral-signal { /* Tambahkan #data-muncul-bb */
+            color: #e0e0e0; /* Grey/White */
+        }
+
+        #data-muncul-ema input[type="date"], #data-muncul-bb input[type="date"] { /* Tambahkan #data-muncul-bb */
+            margin-bottom: 10px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #00bcd4;
+            background-color: #0f0f1d;
+            color: #e0e0e0;
+            width: 80%; /* Sesuaikan lebar */
+            text-align: center;
+        }
+
+        /* Styling untuk chart warna */
+        .signal-color-chart-container {
+            width: 150px; /* Lebar chart */
+            background: #000;
+            border: 1px solid #3a3a3a;
+            border-radius: 15px;
+            box-shadow: 0px 0px 8px #161275;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            flex-shrink: 0; /* Mencegah elemen menyusut */
+        }
+
+        .signal-color-chart-container h3 {
+            font-size: 12px;
+            color: #00bcd4;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .color-bar-wrapper {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .color-bar-label {
+            font-size: 7px;
+            color: #e0e0e0;
+            white-space: nowrap; /* Mencegah teks patah baris */
+            width: 150px; /* Lebar label */
+            text-align: right;
+        }
+
+        .color-bar {
+            flex-grow: 1; /* Membuat bar memenuhi sisa ruang */
+            height: 15px;
+            border-radius: 3px;
+        }
+
+        .color-green-dark { background-color:#09971a; } /* Hijau tua */
+        .color-green-medium-dark { background-color: #09971abb; }
+        .color-green-medium { background-color:#09971a79; }
+        .color-green-light { background-color: #09971a33; }
+        .color-neutral { background-color: #fef9441d; } /* Abu-abu netral */
+        .color-red-light { background-color: #d2150841; }
+        .color-red-medium { background-color: #d2150881; }
+        .color-red-medium-dark { background-color:  #d21508ba; }
+        .color-red-dark { background-color: #d21508; } /* Merah tua */
+        
+        .chart-signal-indicator {
+            width: 100%;
+            height: 22px;
+            border-radius: 5px;
+            background-color: transparent; /* Warna indikator */
+            position: absolute; /* Posisikan relatif terhadap container chart */
+            left: 0; /* Tengah horizontal */
+            transform: translateY(-25%); /* Atur posisi vertikal nanti dengan JS */
+            border: 1px solid #000;
+            box-shadow: 0 2px 7px yellow;
+            z-index: 5;
+        }
+
+        .signal-value-display {
+            font-size: 5px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .signal-chart-wrapper {
+            position: relative;
+            width: 80%;
+            height: 180px; /* Tinggi untuk area warna */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .signal-level {
+            width: 100%;
+            border-radius: 2px;
+            height: calc(100% / 9); /* Bagi tinggi merata untuk 9 level */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .level-label {
+            font-size: 4px;
+            color: yellow;
+            position: absolute;
+            text-align: center;/* Sesuaikan posisi label */
+            white-space: nowrap;
+        }
+        .level-label.right {
+            left: auto;
+            right: -0px; /* Sesuaikan posisi label */
+        }
+        
+        
+        
+        
+        #live-datetime {
+            font-size: 7px;
+            margin-bottom: 7px;
+            margin-top: 5px;
+            text-align: center;
+            font-weight: bold;
+            color: #fff; /* Yellow color */
+            letter-spacing: 1px;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        #countdown-container {
+            text-align: center;
+        }
+
+        #countdown {
+            font-size: 5px;
+            font-weight: bold;
+            color: Yellow; /* Yellow color */
+            letter-spacing: 1px;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        #countdown-label {
+            margin-top: 5px;
+            font-size: 5px;
+            color: #b0b0b0;
+        }
+
+        @keyframes pulse {
+            from {
+                transform: scale(1);
+            }
+            to {
+                transform: scale(0.95);
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="container">
+        <h1>Live Kurs Crypt<span style="position: relative;">o<div id="ws-status-indicator" class="ws-status-indicator connecting"></div></span></h1>
+        
+        
+    <div id="countdown-container">
+        <div id="live-datetime"></div>
+        <div id="countdown"></div>
+        <div id="countdown-label"></div></div>
+    </div>
+
+        
+        <a href="" style="text-decoration:none">
+            <div class="currency-box btc-idr" style="background-color:#000">
+                <h2>Bitcoin (BTC)</h2>
+                <div class="rate-info">
+                    <center>
+                      <p class="rate-value" id="btc-idr-rate">Memuat...</p>
+                    </center>
+                    <p class="detail-info-1">Tertinggi (24j): <span id="btc-high-price">Memuat...</span></p>
+                    <p class="detail-info-2">Terendah (24j): <span id="btc-low-price">Memuat...</span></p>
+                    <p class="detail-info-3">Pergerakan (24j): <span id="btc-percentage-change">Memuat...</span></p>
+                    <p class="detail-info-4">Harga Beli Terbaik: <span id="btc-best-buy">Memuat...</span></p>
+                    <p class="detail-info-5">Harga Jual Terbaik: <span id="btc-best-sell">Memuat...</span></p>
+                    <p class="detail-info-6">Volume (24j) :<span id="btcVolumeInfoBtc">Memuat...</span></p>
+                    <p class="detail-info-7">Volume (24j) :<span id="btcVolumeInfoIdr">Memuat...</span></p>
+                    <p class="last-update" id="btc-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+        </a>
+
+        
+        <div class="signal-data-and-chart-wrapper-2">
+            <div class="signal-color-chart-container">
+                <h3>Kekuatan Sinyal EMA</h3>
+                <div class="signal-chart-wrapper">
+                    <div class="signal-level color-green-dark">
+                        <span class="level-label left">Strong Buy Kuat</span>
+                    </div>
+                    <div class="signal-level color-green-medium-dark">
+                        <span class="level-label left">Strong Buy Medium</span>
+                    </div>
+                    <div class="signal-level color-green-medium">
+                        <span class="level-label left">Strong Buy Lemah</span>
+                    </div>
+                    <div class="signal-level color-green-light">
+                        <span class="level-label left">Buy</span>
+                    </div>
+                    <div class="signal-level color-neutral">
+                        <span class="level-label left">Neutral (0%)</span>
+                    </div>
+                    <div class="signal-level color-red-light">
+                        <span class="level-label left">Sell</span>
+                    </div>
+                    <div class="signal-level color-red-medium">
+                        <span class="level-label left">Strong Sell Lemah</span>
+                    </div>
+                    <div class="signal-level color-red-medium-dark">
+                        <span class="level-label left">Strong Sell Medium</span>
+                    </div>
+                    <div class="signal-level color-red-dark">
+                        <span class="level-label left">Strong Sell Kuat</span>
+                    </div>
+                    <div id="ema-chart-signal-indicator" class="chart-signal-indicator" style="display: none;"></div>
+                </div>
+                <div id="ema-chart-signal-value-display" class="signal-value-display">Pilih tanggal untuk melihat sinyal.</div>
+            </div>
+
+            <div class="signal-color-chart-container"> <h3>Kekuatan Sinyal BB</h3>
+                <div class="signal-chart-wrapper">
+                    <div class="signal-level color-green-dark">
+                        <span class="level-label left">Strong Buy Kuat</span>
+                    </div>
+                    <div class="signal-level color-green-medium-dark">
+                        <span class="level-label left">Strong Buy Medium</span>
+                    </div>
+                    <div class="signal-level color-green-medium">
+                        <span class="level-label left">Strong Buy Lemah</span>
+                    </div>
+                    <div class="signal-level color-green-light">
+                        <span class="level-label left">Buy</span>
+                    </div>
+                    <div class="signal-level color-neutral">
+                        <span class="level-label left">Neutral (0%)</span>
+                    </div>
+                    <div class="signal-level color-red-light">
+                        <span class="level-label left">Sell</span>
+                    </div>
+                    <div class="signal-level color-red-medium">
+                        <span class="level-label left">Strong Sell Lemah</span>
+                    </div>
+                    <div class="signal-level color-red-medium-dark">
+                        <span class="level-label left">Strong Sell Medium</span>
+                    </div>
+                    <div class="signal-level color-red-dark">
+                        <span class="level-label left">Strong Sell Kuat</span>
+                    </div>
+                    <div id="bb-chart-signal-indicator" class="chart-signal-indicator" style="display: none;"></div>
+                </div>
+                <div id="bb-chart-signal-value-display" class="signal-value-display">Pilih tanggal untuk melihat sinyal.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dibuat-oleh">
+       <h3>
+          @by:Deni_Sulianto
+       </h3>
+    </div>
+    
+    
+        <div class="signal-data-and-chart-wrapper">
+            <div class ="grafik-ema-btc">
+                <center>
+                  <input type="date" id="tanggal-indicator"> </center>
+                <div id="data-muncul-indicator"> <p>Pilih tanggal untuk melihat sinyal EMA dan Bollinger Bands.</p>
+                </div>
+            </div>
+        </div>
+
+
+    <div class="main-content-wrapper">
+        <div class="signal-table-section">
+            <h2>Sinyal Indikator (EMA & Bollinger Bands)</h2>
+            <table class="signal-table">
+                <thead>
+                    <tr>
+                        <th class="date-column">Tanggal</th>
+                        <th>Sinyal EMA</th>
+                        <th>Sinyal Bollinger Bands</th>
+                        <th>Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody id="signal-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="ema-percentage-section" style="margin-top: 20px">
+        <h2>Sinyal Persentase Pergerakan EMA</h2>
+        <table class="ema-percentage-table" id ="persentase-persen-ema">
+            <thead>
+                <tr>
+                    <th class="date-column">Tanggal</th>
+                    <th> (<span id="ema-period-perc-1">7</span>) vs  (<span id="ema-period-perc-2">25</span>) </th>
+                    <th> (<span id="ema-period-perc-1-2">7</span>) vs  (<span id="ema-period-perc-3-2">99</span>) </th>
+                    <th> (<span id="ema-period-perc-2-2">25</span>) vs  (<span id="ema-period-perc-3-3">99</span>) </th>
+                    <th id = "kekuatan-sinyal">Kekuatan Sinyal (%)</th> <th>Sinyal</th>
+                </tr>
+            </thead>
+            <tbody id="ema-percentage-table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="bollinger-bands-percentage-section" style="margin-top: 20px">
+        <h2>Sinyal Persentase Pergerakan Bollinger Bands (<span id="bb-period-perc-display">21</span>, StdDev <span id="bb-stddev-perc-display">2</span>)</h2>
+        <table class="bollinger-bands-percentage-table">
+            <thead>
+                <tr>
+                    <th class="date-column">Tanggal</th>
+                    <th>Harga vs Middle Band</th>
+                    <th>Harga vs Upper Band</th>
+                    <th>Harga vs Lower Band</th>
+                    <th>Kekuatan Sinyal (%)</th>
+                    <th>Sinyal BB</th>
+                </tr>
+            </thead>
+            <tbody id="bb-percentage-table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="ema-section">
+        <h2>Indikator EMA (Nilai Harga)</h2>
+        <table class="ema-table">
+            <thead>
+                <tr>
+                    <th class="date-column">Tanggal</th>
+                    <th class="ema-header-clickable" data-ema-index="1" style="text-decoration:none">EMA (<span id="ema-period-1">7</span>)</th>
+                    <th class="ema-header-clickable" data-ema-index="2" style="text-decoration:none">EMA (<span id="ema-period-2">25</span>)</th>
+                    <th class="ema-header-clickable" data-ema-index="3" style="text-decoration:none">EMA (<span id="ema-period-3">99</span>)</th>
+                    <th>Indikator</th>
+                </tr>
+            </thead>
+            <tbody id="ema-table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="bollinger-bands-section" style="margin-top: 20px;">
+        <h2>Bollinger Bands (<span id="bb-period-display">21</span>, StdDev <span id="bb-stddev-display">2</span>)</h2>
+        <table class="ema-table bollinger-bands-table"> 
+            <thead>
+                <tr>
+                    <th class="date-column">Tanggal</th>
+                    <th class="bollinger-bands-header-clickable" data-bb-param="period" style="margin-top: 20px; text-decoration:none">Middle Band</th>
+                    <th class="bollinger-bands-header-clickable" data-bb-param="stddev" style="margin-top: 20px; text-decoration:none">Upper Band</th>
+                    <th>Lower Band</th>
+                    <th>RSI (14)</th>
+                </tr>
+            </thead>
+            <tbody id="bollinger-bands-table-body"></tbody>
+        </table>
+    </div>
+
+    <div class="history-section">
+        <a href="tambah-history-btc.html" style="text-decoration:none">
+            <h2>Riwayat Harga (Live & Manual)</h2>
+        </a>
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th class="date-column">Tanggal</th>
+                    <th class="harga-tutup">Terakhir</th>
+                    <th class="harga-buka">Pembukaan</th>
+                    <th class="harga-tertinggi">Tertinggi</th>
+                    <th class="harga-terendah">Terendah</th>
+                    <th class="perubahan-percentage">(%)</th>
+                </tr>
+            </thead>
+            <tbody id="btc-history-table-body"></tbody>
+        </table>
+        <br>
+    </div>
+
+    <footer>
+        Data diambil dari Indodax API oleh server Python, kemudian dikirim via WebSocket.
+    </footer>
+
+    <div id="dateFilterModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeDateFilterModal">&times;</span>
+            <div class="control-group date-selection">
+                <label for="tanggalMulai">Pilih Rentang Tanggal</label>
+                <div class="date-inputs">
+                    <input type="date" id="tanggalMulai">
+                    <span id="tanggalSeparator"> - </span>
+                    <input type="date" id="tanggalSelesai">
+                    <button id="berlakukanBtn">Berlakukan</button>
+                    <button id="resetDatesBtn">Reset Tanggal</button>
+                    <button id="deleteHistoryBtn">Hapus Data</button> </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="emaPeriodModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeEmaPeriodModal">&times;</span>
+            <div class="control-group ema-selection">
+                <label for="emaPeriodInput">Masukkan Periode EMA:</label>
+                <div class="ema-inputs">
+                    <input type="number" id="emaPeriodInput" min="1" value="12">
+                    <button id="setEmaPeriodBtn">Atur Periode EMA</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="bollingerBandsModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="closeBollingerBandsModal">&times;</span>
+            <div class="control-group bollinger-bands-selection">
+                <label>Atur Parameter Bollinger Bands:</label>
+                <div class="bollinger-bands-inputs">
+                    <label for="bbPeriodInput">Periode:</label>
+                    <input type="number" id="bbPeriodInput" min="1" value="21">
+                    <label for="bbStdDevInput">Standar Deviasi:</label>
+                    <input type="number" id="bbStdDevInput" min="0.1" step="0.1" value="2">
+                    <button id="setBollingerBandsBtn">Atur Bollinger Bands</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const btcIdrRateElement = document.getElementById('btc-idr-rate');
+        const btcHighPriceElement = document.getElementById('btc-high-price');
+        const btcLowPriceElement = document.getElementById('btc-low-price');
+        const btcPercentageChangeElement = document.getElementById('btc-percentage-change');
+        const btcLastUpdateElement = document.getElementById('btc-last-update');
+        let lastBtcIdrRate = 0;
+
+        const wsStatusIndicator = document.getElementById('ws-status-indicator');
+
+        const btcHistoryTableBody = document.getElementById('btc-history-table-body');
+        const emaTableBody = document.getElementById('ema-table-body'); // Elemen tbody tabel EMA
+        const emaPercentageTableBody = document.getElementById('ema-percentage-table-body'); // Elemen tbody tabel persentase EMA
+        const bollingerBandsTableBody = document.getElementById('bollinger-bands-table-body'); // Elemen tbody tabel Bollinger Bands
+        const signalTableBody = document.getElementById('signal-table-body'); // Elemen tbody tabel Sinyal Baru
+        const bbPercentageTableBody = document.getElementById('bb-percentage-table-body'); // NEW: Elemen tbody tabel persentase BB
+
+
+        const btcBestBuyElement = document.getElementById('btc-best-buy');
+        const btcBestSellElement = document.getElementById('btc-best-sell');
+
+        let allCryptoHistory = []; // Ini akan menampung data live dan manual
+        let currentFilteredHistory = []; // Data yang sedang ditampilkan di tabel
+
+        // Batas default total baris yang ditampilkan di awal (jika tidak ada filter tanggal)
+        const DEFAULT_GLOBAL_HISTORY_LIMIT = 7; 
+
+        const websocketUrl = "ws://localhost:8765"; // Pastikan URL ini sesuai dengan server Python Anda
+
+        let ws;
+
+        // Elemen modal filter tanggal
+        const dateFilterModal = document.getElementById('dateFilterModal');
+        const closeDateFilterModal = document.getElementById('closeDateFilterModal');
+        const tanggalMulaiInput = document.getElementById('tanggalMulai');
+        const tanggalSelesaiInput = document.getElementById('tanggalSelesai');
+        const berlakukanFilterBtn = document.getElementById('berlakukanBtn');
+        const resetFilterDatesBtn = document.getElementById('resetDatesBtn');
+        const deleteHistoryBtn = document.getElementById('deleteHistoryBtn'); // Tambahkan elemen tombol hapus
+
+        // Variabel untuk menyimpan rentang tanggal filter saat ini
+        let filterStartDate = null;
+        let filterEndDate = null;
+
+        // --- Variabel dan Elemen untuk Modal EMA Baru ---
+        const emaPeriodModal = document.getElementById('emaPeriodModal');
+        const closeEmaPeriodModal = document.getElementById('closeEmaPeriodModal');
+        const emaPeriodInput = document.getElementById('emaPeriodInput');
+        const setEmaPeriodBtn = document.getElementById('setEmaPeriodBtn');
+
+        let currentEmaIndexToSet = 0; // Untuk menyimpan indeks EMA yang sedang diatur (1, 2, atau 3)
+        // Default periode EMA
+        const emaPeriods = {
+            1: 7,
+            2: 25,
+            3: 99,
+        };
+
+        // --- Variabel dan Elemen untuk Modal Bollinger Bands Baru ---
+        const bollingerBandsModal = document.getElementById('bollingerBandsModal');
+        const closeBollingerBandsModal = document.getElementById('closeBollingerBandsModal');
+        const bbPeriodInput = document.getElementById('bbPeriodInput');
+        const bbStdDevInput = document.getElementById('bbStdDevInput');
+        const setBollingerBandsBtn = document.getElementById('setBollingerBandsBtn');
+
+        // Default periode Bollinger Bands
+        let bollingerBandsParams = {
+            period: 21, // Updated to 21
+            stdDev: 2
+        };
+
+
+        // PASSWORD UNTUK MENGHAPUS DATA
+        const PASSWORD_HAPUS = "150205"; // <-- Password untuk menghapus data
+
+        // Fungsi untuk memformat harga menjadi format Rupiah
+        function formatPrice(price) {
+            return `Rp ${parseFloat(price).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+        }
+
+        // Fungsi untuk memformat harga tanpa "Rp" khusus untuk tabel riwayat
+        function formatPriceNoRp(price) {
+            return parseFloat(price).toLocaleString('id-ID', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        // Fungsi baru untuk memformat tanggal tanpa tahun (DD-MM)
+        function formatDateNoYear(dateString) {
+            const date = new Date(dateString);
+            const day = date.getDate().toString().padStart(2, '0'); // Ambil tanggal (DD)
+            const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Ambil bulan (MM)
+            return `${day}-${month}`;
+        }
+
+        // Fungsi untuk memformat persentase perubahan dan memberikan warna
+        function formatPercentage(percentage) {
+            const element = document.createElement('span');
+            let p;
+
+            // Coba parsing sebagai float terlebih dahulu
+            if (typeof percentage === 'string' && percentage.includes('%')) {
+                p = parseFloat(percentage.replace('%', ''));
+            } else {
+                p = parseFloat(percentage);
+            }
+
+            if (!isNaN(p)) {
+                const sign = p >= 0 ? '+' : '';
+                element.innerHTML = `<strong>${sign}${p.toFixed(2)}%</strong>`;
+                if (p > 0) {
+                    element.classList.add('positive');
+                } else if (p < 0) {
+                    element.classList.add('negative');
+                }
+            } else {
+                element.innerHTML = `<strong>${percentage}</strong>`;
+                // Jika input adalah string yang tidak dapat di-parse sebagai angka,
+                // coba deteksi tanda '+' atau '-'
+                if (typeof percentage === 'string') {
+                    if (percentage.startsWith('+')) {
+                        element.classList.add('positive');
+                    } else if (percentage.startsWith('-')) {
+                        element.classList.add('negative');
+                    }
+                }
+            }
+            return element.outerHTML;
+        }
+        
+        // Fungsi untuk menghitung EMA
+        function calculateEMA(data, period) {
+            if (data.length < period) {
+                return [];
+            }
+
+            const emaArray = [];
+            const multiplier = 2 / (period + 1);
+
+            // Hitung SMA awal untuk EMA pertama
+            let sma = 0;
+            for (let i = 0; i < period; i++) {
+                sma += data[i].hargaTerakhir;
+            }
+            let ema = sma / period;
+            emaArray.push({ tanggal: data[period - 1].tanggal, value: ema });
+
+            // Hitung EMA selanjutnya
+            for (let i = period; i < data.length; i++) {
+                ema = (data[i].hargaTerakhir - ema) * multiplier + ema;
+                emaArray.push({ tanggal: data[i].tanggal, value: ema });
+            }
+            return emaArray;
+        }
+
+        // Fungsi untuk menentukan indikator
+        // Modifikasi di sini untuk mendeteksi persilangan
+        function getIndicator(ema1_today, ema2_today, ema3_today, ema1_yesterday, ema2_yesterday, ema3_yesterday) {
+            let indicator = "Neutral";
+            let className = "";
+
+            // Deteksi Golden Cross (EMA Pendek melintasi EMA Panjang dari bawah ke atas)
+            // Asumsi EMA1 (pendek) dan EMA2 (panjang)
+            if (ema1_yesterday !== null && ema2_yesterday !== null) { // Pastikan ada data kemarin
+                if (ema1_today > ema2_today && ema1_yesterday <= ema2_yesterday) {
+                    indicator = "Golden Cross (Buy Signal)";
+                    className = "ema-crossing-buy";
+                }
+                // Deteksi Death Cross (EMA Pendek melintasi EMA Panjang dari atas ke bawah)
+                // Asumsi EMA1 (pendek) dan EMA2 (panjang)
+                else if (ema1_today < ema2_today && ema1_yesterday >= ema2_yesterday) {
+                    indicator = "Death Cross (Sell Signal)";
+                    className = "ema-crossing-sell";
+                }
+                // Deteksi persilangan EMA1 dan EMA3
+                else if (ema1_today > ema3_today && ema1_yesterday <= ema3_yesterday) {
+                    indicator = "EMA1/EMA3 Buy Cross";
+                    className = "ema-crossing-buy";
+                }
+                else if (ema1_today < ema3_today && ema1_yesterday >= ema3_yesterday) {
+                    indicator = "EMA1/EMA3 Sell Cross";
+                    className = "ema-crossing-sell";
+                }
+                // Deteksi persilangan EMA2 dan EMA3
+                else if (ema2_today > ema3_today && ema2_yesterday <= ema3_yesterday) {
+                    indicator = "EMA2/EMA3 Buy Cross";
+                    className = "ema-crossing-buy";
+                }
+                else if (ema2_today < ema3_today && ema2_yesterday >= ema3_yesterday) {
+                    indicator = "EMA2/EMA3 Sell Cross";
+                    className = "ema-crossing-sell";
+                }
+            }
+
+            // Indikator berdasarkan posisi relatif EMA jika tidak ada persilangan atau sebagai fallback
+            if (!className) { // Jika belum ada sinyal persilangan
+                if (ema1_today > ema2_today && ema2_today > ema3_today) {
+                    indicator = "Strong Buy";
+                } else if (ema1_today < ema2_today && ema2_today < ema3_today) {
+                    indicator = "Strong Sell";
+                } else if (ema1_today > ema2_today && ema2_today < ema3_today) {
+                    indicator = "Buy Signal";
+                } else if (ema1_today < ema2_today && ema2_today > ema3_today) {
+                    indicator = "Sell Signal";
+                }
+            }
+
+            return { indicator: indicator, className: className };
+        }
+
+        // Fungsi untuk menghitung persentase selisih antara dua nilai
+        function calculatePercentageDifference(val1, val2) {
+            if (val2 === 0) return 0; // Hindari pembagian dengan nol
+            return ((val1 - val2) / val2) * 100;
+        }
+
+        // Array global untuk menyimpan data persentase EMA yang dihitung
+        let emaPercentageData = [];
+
+        // Array global untuk menyimpan data Bollinger Bands yang dihitung
+        let bollingerBandsData = [];
+
+        // NEW: Array global untuk menyimpan data persentase Bollinger Bands yang dihitung
+        let bbPercentageData = [];
+
+        // Array global untuk menyimpan data sinyal gabungan
+        let combinedSignalData = [];
+
+        // Fungsi untuk menghitung Simple Moving Average (SMA)
+        function calculateSMA(data, period) {
+            if (data.length < period) {
+                return [];
+            }
+            const smaArray = [];
+            for (let i = period - 1; i < data.length; i++) {
+                let sum = 0;
+                for (let j = 0; j < period; j++) {
+                    sum += data[i - j].hargaTerakhir;
+                }
+                smaArray.push({ tanggal: data[i].tanggal, value: sum / period });
+            }
+            return smaArray;
+        }
+
+        // Fungsi untuk menghitung Standard Deviation (StdDev)
+        function calculateStandardDeviation(data, period, smaData) {
+            if (data.length < period || smaData.length === 0) {
+                return [];
+            }
+            const stdDevArray = [];
+            // Pastikan data dan smaData memiliki panjang yang selaras setelah period
+            for (let i = period - 1; i < data.length; i++) {
+                const sma = smaData[i - (period - 1)].value; // Dapatkan SMA yang sesuai dengan tanggal
+                let sumOfSquares = 0;
+                for (let j = 0; j < period; j++) {
+                    sumOfSquares += Math.pow(data[i - j].hargaTerakhir - sma, 2);
+                }
+                stdDevArray.push({ tanggal: data[i].tanggal, value: Math.sqrt(sumOfSquares / period) });
+            }
+            return stdDevArray;
+        }
+
+        // Fungsi untuk menghitung Bollinger Bands
+        // data: array of objects like { tanggal: '...', hargaTerakhir: N }
+        // period: periode untuk SMA (biasanya 20)
+        // numStdDev: jumlah standar deviasi untuk pita atas dan bawah (biasanya 2)
+        function calculateBollingerBands(data, period, numStdDev) {
+            if (data.length < period) {
+                return [];
+            }
+
+            const bollingerBands = [];
+            // SMA untuk Bollinger Bands dihitung dari data harga terakhir
+            const smaResults = calculateSMA(data, period);
+
+            // StdDev untuk Bollinger Bands
+            const stdDevResults = calculateStandardDeviation(data, period, smaResults);
+
+            for (let i = 0; i < smaResults.length; i++) {
+                const tanggal = smaResults[i].tanggal;
+                const middleBand = smaResults[i].value;
+                const stdDevEntry = stdDevResults.find(s => s.tanggal === tanggal);
+
+                if (stdDevEntry) {
+                    const upperBand = middleBand + (stdDevEntry.value * numStdDev);
+                    const lowerBand = middleBand - (stdDevEntry.value * numStdDev);
+
+                    bollingerBands.push({
+                        tanggal: tanggal,
+                        middleBand: middleBand,
+                        upperBand: upperBand,
+                        lowerBand: lowerBand
+                    });
+                }
+            }
+            return bollingerBands;
+        }
+
+        // NEW: Fungsi untuk menghitung RSI
+        function calculateRSI(data, period = 14) {
+            if (data.length < period) {
+                return [];
+            }
+
+            const rsiArray = [];
+            let avgGain = 0;
+            let avgLoss = 0;
+
+            // Hitung gain/loss awal untuk periode pertama
+            for (let i = 1; i < period; i++) { // Dimulai dari indeks 1 karena perlu perbandingan dengan harga sebelumnya
+                const priceDiff = data[i].hargaTerakhir - data[i - 1].hargaTerakhir;
+                if (priceDiff > 0) {
+                    avgGain += priceDiff;
+                } else {
+                    avgLoss += Math.abs(priceDiff);
+                }
+            }
+            avgGain /= (period -1); // Rata-rata dari period-1 perbedaan
+            avgLoss /= (period -1); // Rata-rata dari period-1 perbedaan
+            
+            // Hitung RSI pertama
+            if (avgLoss === 0) {
+                rsiArray.push({ tanggal: data[period - 1].tanggal, value: 100 }); // Jika tidak ada loss, RSI 100
+            } else {
+                const rs = avgGain / avgLoss;
+                rsiArray.push({ tanggal: data[period - 1].tanggal, value: 100 - (100 / (1 + rs)) });
+            }
+
+            // Hitung RSI selanjutnya (Exponential Moving Average)
+            for (let i = period; i < data.length; i++) {
+                const priceDiff = data[i].hargaTerakhir - data[i - 1].hargaTerakhir;
+                let currentGain = 0;
+                let currentLoss = 0;
+
+                if (priceDiff > 0) {
+                    currentGain = priceDiff;
+                } else {
+                    currentLoss = Math.abs(priceDiff);
+                }
+
+                avgGain = ((avgGain * (period - 1)) + currentGain) / period;
+                avgLoss = ((avgLoss * (period - 1)) + currentLoss) / period;
+                
+                let rs;
+                if (avgLoss === 0) {
+                    rs = Infinity; // Mencegah pembagian dengan nol
+                } else {
+                    rs = avgGain / avgLoss;
+                }
+
+                rsiArray.push({ tanggal: data[i].tanggal, value: 100 - (100 / (1 + rs)) });
+            }
+            return rsiArray;
+        }
+
+
+        // Fungsi untuk me-render (menggambar ulang) tabel riwayat harga dan EMA
+        function renderHistoryTables() {
+            // Filter data yang akan ditampilkan berdasarkan rentang tanggal yang dipilih
+            let dataToDisplay = allCryptoHistory.filter(entry => entry.currency === 'BTC');
+
+            if (filterStartDate && filterEndDate) {
+                const start = new Date(filterStartDate);
+                start.setHours(0, 0, 0, 0); // Atur ke awal hari
+                const end = new Date(filterEndDate);
+                end.setHours(23, 59, 59, 999); // Atur ke akhir hari
+
+                dataToDisplay = dataToDisplay.filter(entry => {
+                    const entryDate = new Date(entry.tanggal);
+                    entryDate.setHours(0, 0, 0, 0); // Samakan dengan awal hari untuk perbandingan
+                    return entryDate >= start && entryDate <= end;
+                });
+            }
+
+            // Urutkan riwayat berdasarkan tanggal secara menurun (terbaru di atas)
+            dataToDisplay.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            btcHistoryTableBody.innerHTML = ''; // Kosongkan tabel sebelum diisi ulang
+            emaTableBody.innerHTML = ''; // Kosongkan tabel EMA sebelum diisi ulang
+            emaPercentageTableBody.innerHTML = ''; // Kosongkan tabel persentase EMA
+            bollingerBandsTableBody.innerHTML = ''; // Kosongkan tabel Bollinger Bands
+            signalTableBody.innerHTML = ''; // Kosongkan tabel sinyal baru
+            bbPercentageTableBody.innerHTML = ''; // NEW: Kosongkan tabel persentase BB
+
+            emaPercentageData = []; // Kosongkan data persentase EMA sebelum mengisi ulang
+            bbPercentageData = []; // NEW: Kosongkan data persentase BB sebelum mengisi ulang
+            combinedSignalData = []; // Kosongkan data sinyal gabungan
+
+            // Tentukan jumlah baris yang akan ditampilkan
+            let limit = dataToDisplay.length; // Defaultnya tampilkan semua jika ada filter atau reset
+            if (!filterStartDate && !filterEndDate) {
+                // Jika tidak ada filter yang aktif, batasi hingga DEFAULT_GLOBAL_HISTORY_LIMIT
+                limit = Math.min(dataToDisplay.length, DEFAULT_GLOBAL_HISTORY_LIMIT);
+            }
+            
+            // Ambil data harga penutupan untuk perhitungan EMA dan Bollinger Bands
+            const closingPricesForCalculations = dataToDisplay.slice().reverse(); // Urutkan dari terlama ke terbaru untuk EMA
+
+            // Hitung EMA berdasarkan periode yang telah diatur
+            const ema1Results = calculateEMA(closingPricesForCalculations, emaPeriods[1]);
+            const ema2Results = calculateEMA(closingPricesForCalculations, emaPeriods[2]);
+            const ema3Results = calculateEMA(closingPricesForCalculations, emaPeriods[3]);
+
+            // Hitung Bollinger Bands (periode default 21, numStdDev default 2)
+            bollingerBandsData = calculateBollingerBands(closingPricesForCalculations, bollingerBandsParams.period, bollingerBandsParams.stdDev);
+
+            // Hitung RSI (periode default 14)
+            const rsiResults = calculateRSI(closingPricesForCalculations, 14);
+
+            // Gabungkan data EMA dengan tanggal
+            const emaDataCombined = [];
+            // Looping melalui closingPricesForCalculations untuk memastikan urutan tanggal yang benar
+            for (let i = 0; i < closingPricesForCalculations.length; i++) {
+                const currentData = closingPricesForCalculations[i];
+                const prevData = closingPricesForCalculations[i - 1]; // Data hari sebelumnya untuk deteksi persilangan
+
+                const date = currentData.tanggal;
+
+                const e1Today = ema1Results.find(e => e.tanggal === date);
+                const e2Today = ema2Results.find(e => e.tanggal === date);
+                const e3Today = ema3Results.find(e => e.tanggal === date);
+
+                let e1Yesterday = null;
+                let e2Yesterday = null;
+                let e3Yesterday = null;
+
+                if (prevData) {
+                    e1Yesterday = ema1Results.find(e => e.tanggal === prevData.tanggal);
+                    e2Yesterday = ema2Results.find(e => e.tanggal === prevData.tanggal);
+                    e3Yesterday = ema3Results.find(e => e.tanggal === prevData.tanggal);
+                }
+
+                // Pastikan semua EMA untuk tanggal tersebut tersedia sebelum menambahkan ke emaDataCombined
+                if (e1Today && e2Today && e3Today) {
+                    const indicatorResult = getIndicator(
+                        e1Today.value, e2Today.value, e3Today.value,
+                        e1Yesterday ? e1Yesterday.value : null, // Lewatkan nilai kemarin jika ada
+                        e2Yesterday ? e2Yesterday.value : null,
+                        e3Yesterday ? e3Yesterday.value : null
+                    );
+
+                    emaDataCombined.push({
+                        tanggal: date,
+                        ema1: e1Today.value,
+                        ema2: e2Today.value,
+                        ema3: e3Today.value,
+                        indikator: indicatorResult.indicator,
+                        indikatorClass: indicatorResult.className // Simpan kelas CSS untuk indikator
+                    });
+                }
+            }
+
+            // Urutkan data EMA dari terbaru ke terlama
+            emaDataCombined.sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+
+            // Render tabel EMA (Nilai Harga)
+            for (let i = 0; i < Math.min(emaDataCombined.length, limit); i++) { // Batasi jumlah baris EMA juga
+                const entry = emaDataCombined[i];
+                const row = emaTableBody.insertRow();
+                
+                // Kolom Tanggal EMA (sekarang bisa diklik)
+                const dateCellEma = row.insertCell();
+                dateCellEma.classList.add('date-column'); // Menambahkan kelas yang sama
+                dateCellEma.textContent = formatDateNoYear(entry.tanggal);
+                dateCellEma.onclick = function() { // Tambahkan event listener
+                    openDateFilterModalWithDate(entry.tanggal);
+                };
+                
+                const ema1Cell = row.insertCell();
+                ema1Cell.textContent = formatPriceNoRp(entry.ema1);
+
+                const ema2Cell = row.insertCell();
+                ema2Cell.textContent = formatPriceNoRp(entry.ema2);
+
+                const ema3Cell = row.insertCell();
+                ema3Cell.textContent = formatPriceNoRp(entry.ema3);
+
+                // Update indikator dengan kelas CSS yang sesuai
+                const indicatorCell = row.insertCell();
+                indicatorCell.textContent = entry.indikator;
+                if (entry.indikatorClass) {
+                    indicatorCell.classList.add(entry.indikatorClass);
+                }
+            }
+
+            // Render tabel Persentase Pergerakan EMA
+            for (let i = 0; i < Math.min(emaDataCombined.length, limit); i++) { // Batasi jumlah baris EMA juga
+                const entry = emaDataCombined[i];
+                const row = emaPercentageTableBody.insertRow();
+                
+                const dateCellPercEma = row.insertCell();
+                dateCellPercEma.classList.add('date-column');
+                dateCellPercEma.textContent = formatDateNoYear(entry.tanggal);
+                dateCellPercEma.onclick = function() {
+                    openDateFilterModalWithDate(entry.tanggal);
+                };
+
+                // Perhitungan persentase selisih antara EMA
+                let perc1vs2 = 0;
+                let perc1vs3 = 0;
+                let perc2vs3 = 0;
+                let currentSignal = "Netral"; // Sinyal untuk tabel persentase
+                let signalStrength = 0; // Inisialisasi kekuatan sinyal sebagai angka
+
+                if (entry.ema1 && entry.ema2) {
+                    perc1vs2 = calculatePercentageDifference(entry.ema1, entry.ema2);
+                }
+                if (entry.ema1 && entry.ema3) {
+                    perc1vs3 = calculatePercentageDifference(entry.ema1, entry.ema3);
+                }
+                if (entry.ema2 && entry.ema3) {
+                    perc2vs3 = calculatePercentageDifference(entry.ema2, entry.ema3);
+                }
+
+                // Tentukan sinyal untuk tabel persentase (bisa lebih sederhana dari indikator di tabel EMA utama)
+                // Ini bisa disesuaikan lebih lanjut berdasarkan strategi yang diinginkan
+                if (entry.indikator.includes("Golden Cross") || entry.indikator.includes("EMA1/EMA3 Buy Cross") || entry.indikator.includes("EMA2/EMA3 Buy Cross")) {
+                    currentSignal = "BUY";
+                    // Tentukan kekuatan sinyal berdasarkan persilangan yang terjadi
+                    if (entry.indikator.includes("Golden Cross")) {
+                        signalStrength = perc1vs2;
+                    } else if (entry.indikator.includes("EMA1/EMA3 Buy Cross")) {
+                        signalStrength = perc1vs3;
+                    } else if (entry.indikator.includes("EMA2/EMA3 Buy Cross")) {
+                        signalStrength = perc2vs3;
+                    }
+                } else if (entry.indikator.includes("Death Cross") || entry.indikator.includes("EMA1/EMA3 Sell Cross") || entry.indikator.includes("EMA2/EMA3 Sell Cross")) {
+                    currentSignal = "SELL";
+                     // Tentukan kekuatan sinyal berdasarkan persilangan yang terjadi
+                    if (entry.indikator.includes("Death Cross")) {
+                        signalStrength = perc1vs2;
+                    } else if (entry.indikator.includes("EMA1/EMA3 Sell Cross")) {
+                        signalStrength = perc1vs3;
+                    } else if (entry.indikator.includes("EMA2/EMA3 Sell Cross")) {
+                        signalStrength = perc2vs3;
+                    }
+                } else if (entry.indikator.includes("Strong Buy")) {
+                    currentSignal = "Strong BUY";
+                    // Untuk Strong Buy, bisa ambil rata-rata selisih positif atau yang terkuat
+                    signalStrength = (perc1vs2 + perc1vs3 + perc2vs3) / 3; // Contoh: rata-rata
+                    if (signalStrength < 0) signalStrength = Math.abs(signalStrength); // Pastikan positif untuk "kekuatan"
+                } else if (entry.indikator.includes("Strong Sell")) {
+                    currentSignal = "Strong SELL";
+                    signalStrength = (perc1vs2 + perc1vs3 + perc2vs3) / 3;
+                    if (signalStrength > 0) signalStrength = (-Math.abs(signalStrength)); // Pastikan negatif untuk "kekuatan"
+                }
+
+                // Simpan data persentase EMA ke array global
+                emaPercentageData.push({
+                    tanggal: entry.tanggal,
+                    kekuatanSinyal: signalStrength,
+                    sinyal: currentSignal
+                });
+
+
+                const cell1vs2 = row.insertCell();
+                cell1vs2.innerHTML = formatPercentage(perc1vs2.toFixed(2));
+                cell1vs2.classList.add('ema-percentage', perc1vs2 >= 0 ? 'positive' : 'negative');
+
+                const cell1vs3 = row.insertCell();
+                cell1vs3.innerHTML = formatPercentage(perc1vs3.toFixed(2));
+                cell1vs3.classList.add('ema-percentage', perc1vs3 >= 0 ? 'positive' : 'negative');
+
+                const cell2vs3 = row.insertCell();
+                cell2vs3.innerHTML = formatPercentage(perc2vs3.toFixed(2));
+                cell2vs3.classList.add('ema-percentage', perc2vs3 >= 0 ? 'positive' : 'negative');
+
+                // Kolom Kekuatan Sinyal
+                const signalStrengthCell = row.insertCell();
+                signalStrengthCell.innerHTML = formatPercentage(signalStrength.toFixed(2));
+                if (parseFloat(signalStrength) > 0) {
+                    signalStrengthCell.classList.add('positive');
+                } else if (parseFloat(signalStrength) < 0) {
+                    signalStrengthCell.classList.add('negative');
+                }
+
+
+                const signalCell = row.insertCell();
+                signalCell.textContent = currentSignal;
+                if (currentSignal.includes("BUY")) {
+                    signalCell.classList.add('ema-crossing-buy');
+                } else if (currentSignal.includes("SELL")) {
+                    signalCell.classList.add('ema-crossing-sell');
+                }
+            }
+
+
+            // Update teks periode EMA di header tabel
+            document.getElementById('ema-period-1').textContent = emaPeriods[1];
+            document.getElementById('ema-period-2').textContent = emaPeriods[2];
+            document.getElementById('ema-period-3').textContent = emaPeriods[3];
+
+            // Update teks periode EMA di header tabel persentase
+            document.getElementById('ema-period-perc-1').textContent = emaPeriods[1];
+            document.getElementById('ema-period-perc-2').textContent = emaPeriods[2];
+            document.getElementById('ema-period-perc-1-2').textContent = emaPeriods[1];
+            document.getElementById('ema-period-perc-3-2').textContent = emaPeriods[3];
+            document.getElementById('ema-period-perc-2-2').textContent = emaPeriods[2];
+            document.getElementById('ema-period-perc-3-3').textContent = emaPeriods[3];
+
+
+            // NEW: Render Tabel Persentase Pergerakan Bollinger Bands
+            if (bbPercentageTableBody) {
+                bbPercentageTableBody.innerHTML = '';
+                // Urutkan data BB dari terbaru ke terlama untuk ditampilkan
+                const sortedBBData = [...bollingerBandsData].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+                for (let i = 0; i < Math.min(sortedBBData.length, limit); i++) {
+                    const entry = sortedBBData[i];
+                    const currentPriceData = dataToDisplay.find(d => d.tanggal === entry.tanggal);
+
+                    if (!currentPriceData) continue; // Skip if no price data for this date
+
+                    const currentPrice = currentPriceData.hargaTerakhir;
+                    const rsiEntry = rsiResults.find(r => r.tanggal === entry.tanggal);
+
+                    let percPriceVsMiddle = calculatePercentageDifference(currentPrice, entry.middleBand);
+                    let percPriceVsUpper = calculatePercentageDifference(currentPrice, entry.upperBand);
+                    let percPriceVsLower = calculatePercentageDifference(currentPrice, entry.lowerBand);
+
+                    let bbSignal = "Neutral";
+                    let bbSignalStrength = 0;
+                    let bbSignalClass = '';
+
+                    // Determine BB Signal and Strength
+                    if (currentPrice < entry.lowerBand) {
+                        bbSignal = 'STRONG BUY';
+                        bbSignalStrength = Math.abs(percPriceVsLower);
+                        bbSignalClass = 'bb-signal-buy';
+                        if (rsiEntry && rsiEntry.value < 30) {
+                             bbSignalStrength += 5; // Extra strength for RSI oversold
+                        }
+                    } else if (currentPrice > entry.upperBand) {
+                        bbSignal = 'STRONG SELL';
+                        bbSignalStrength = -Math.abs(percPriceVsUpper); // Negative for sell
+                        bbSignalClass = 'bb-signal-sell';
+                        if (rsiEntry && rsiEntry.value > 70) {
+                            bbSignalStrength -= 5; // Extra strength for RSI overbought
+                        }
+                    } else if (currentPrice > entry.middleBand && currentPriceData.hargaPembukaan <= entry.middleBand) {
+                        bbSignal = 'BUY'; // Cross above middle band
+                        bbSignalStrength = percPriceVsMiddle;
+                        bbSignalClass = 'bb-signal-buy';
+                    } else if (currentPrice < entry.middleBand && currentPriceData.hargaPembukaan >= entry.middleBand) {
+                        bbSignal = 'SELL'; // Cross below middle band
+                        bbSignalStrength = percPriceVsMiddle;
+                        bbSignalClass = 'bb-signal-sell';
+                    } else if (percPriceVsMiddle > 0) { // Price above middle band, but no cross
+                        bbSignal = 'Slight Buy';
+                        bbSignalStrength = percPriceVsMiddle;
+                    } else if (percPriceVsMiddle < 0) { // Price below middle band, but no cross
+                        bbSignal = 'Slight Sell';
+                        bbSignalStrength = percPriceVsMiddle;
+                    }
+
+                    bbPercentageData.push({
+                        tanggal: entry.tanggal,
+                        kekuatanSinyal: bbSignalStrength,
+                        sinyal: bbSignal
+                    });
+
+                    const row = bbPercentageTableBody.insertRow();
+                    const dateCell = row.insertCell();
+                    dateCell.classList.add('date-column');
+                    dateCell.textContent = formatDateNoYear(entry.tanggal);
+                    dateCell.onclick = function() {
+                        openDateFilterModalWithDate(entry.tanggal);
+                    };
+
+                    const priceVsMiddleCell = row.insertCell();
+                    priceVsMiddleCell.innerHTML = formatPercentage(percPriceVsMiddle.toFixed(2));
+                    priceVsMiddleCell.classList.add('bb-percentage', percPriceVsMiddle >= 0 ? 'positive' : 'negative');
+
+                    const priceVsUpperCell = row.insertCell();
+                    priceVsUpperCell.innerHTML = formatPercentage(percPriceVsUpper.toFixed(2));
+                    priceVsUpperCell.classList.add('bb-percentage', percPriceVsUpper >= 0 ? 'positive' : 'negative');
+
+                    const priceVsLowerCell = row.insertCell();
+                    priceVsLowerCell.innerHTML = formatPercentage(percPriceVsLower.toFixed(2));
+                    priceVsLowerCell.classList.add('bb-percentage', percPriceVsLower >= 0 ? 'positive' : 'negative');
+
+                    const signalStrengthCell = row.insertCell();
+                    signalStrengthCell.innerHTML = formatPercentage(bbSignalStrength.toFixed(2));
+                    if (parseFloat(bbSignalStrength) > 0) {
+                        signalStrengthCell.classList.add('positive');
+                    } else if (parseFloat(bbSignalStrength) < 0) {
+                        signalStrengthCell.classList.add('negative');
+                    }
+
+                    const signalCell = row.insertCell();
+                    signalCell.textContent = bbSignal;
+                    if (bbSignalClass) {
+                        signalCell.classList.add(bbSignalClass);
+                    }
+                }
+            }
+
+            // Update teks periode Bollinger Bands di header tabel persentase
+            document.getElementById('bb-period-perc-display').textContent = bollingerBandsParams.period;
+            document.getElementById('bb-stddev-perc-display').textContent = bollingerBandsParams.stdDev;
+
+
+            // Render baris sesuai dengan batas yang ditentukan
+            for (let i = 0; i < limit; i++) {
+                const entry = dataToDisplay[i];
+                const row = btcHistoryTableBody.insertRow();
+                
+                // Kolom Tanggal (sekarang bisa diklik)
+                const dateCell = row.insertCell();
+                dateCell.classList.add('date-column'); // Tambahkan kelas agar bisa diklik
+                dateCell.textContent = formatDateNoYear(entry.tanggal);
+                // Tambahkan event listener ke sel tanggal
+                dateCell.onclick = function() {
+                    openDateFilterModalWithDate(entry.tanggal);
+                };
+
+                // Kolom Terakhir (Harga Tutup)
+                const lastPriceCell = row.insertCell();
+                lastPriceCell.textContent = formatPriceNoRp(entry.hargaTerakhir);
+
+                let pChangeValue;
+                if (typeof entry.pergerakan === 'string' && entry.pergerakan.includes('%')) {
+                    pChangeValue = parseFloat(entry.pergerakan.replace('%', ''));
+                } else {
+                    pChangeValue = parseFloat(entry.pergerakan);
+                }
+
+                if (!isNaN(pChangeValue)) {
+                    if (pChangeValue > 0) {
+                        lastPriceCell.classList.add('history-value', 'positive');
+                    } else if (pChangeValue < 0) {
+                        lastPriceCell.classList.add('history-value', 'negative');
+                    }
+                }
+
+                // Kolom Pembukaan
+                row.insertCell().textContent = formatPriceNoRp(entry.hargaPembukaan);
+                // Kolom Tertinggi
+                row.insertCell().textContent = formatPriceNoRp(entry.hargaTertinggi);
+                // Kolom Terendah
+                row.insertCell().textContent = formatPriceNoRp(entry.hargaTerendah);
+
+                // Kolom Perubahan% (menggunakan formatPercentage)
+                const percentageChangeCell = row.insertCell();
+                percentageChangeCell.innerHTML = formatPercentage(entry.pergerakan);
+                // Tambahkan kelas CSS untuk warna pada kolom Perubahan%
+                if (!isNaN(pChangeValue)) {
+                    if (pChangeValue > 0) {
+                        percentageChangeCell.classList.add('perubahan-percentage', 'positive');
+                    } else if (pChangeValue < 0) {
+                        percentageChangeCell.classList.add('perubahan-percentage', 'negative');
+                    }
+                }
+            }
+
+            // --- Render Tabel Bollinger Bands ---
+            if (bollingerBandsTableBody) { // Pastikan elemen tabel ada
+                bollingerBandsTableBody.innerHTML = '';
+                // Urutkan data Bollinger Bands dari terbaru ke terlama untuk ditampilkan
+                const sortedBollingerBandsData = [...bollingerBandsData].sort((a, b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+                for (let i = 0; i < Math.min(sortedBollingerBandsData.length, limit); i++) {
+                    const entry = sortedBollingerBandsData[i];
+                    const row = bollingerBandsTableBody.insertRow();
+
+                    const dateCell = row.insertCell();
+                    dateCell.classList.add('date-column');
+                    dateCell.textContent = formatDateNoYear(entry.tanggal);
+                    dateCell.onclick = function() {
+                        openDateFilterModalWithDate(entry.tanggal);
+                    };
+
+                    row.insertCell().textContent = formatPriceNoRp(entry.middleBand);
+                    row.insertCell().textContent = formatPriceNoRp(entry.upperBand);
+                    row.insertCell().textContent = formatPriceNoRp(entry.lowerBand);
+
+                    // Ambil RSI untuk tanggal yang sesuai
+                    const rsiEntry = rsiResults.find(r => r.tanggal === entry.tanggal);
+                    const rsiValue = rsiEntry ? rsiEntry.value.toFixed(2) : '-';
+                    const rsiCell = row.insertCell();
+                    rsiCell.textContent = rsiValue;
+                }
+            }
+            // Update teks periode Bollinger Bands di header tabel
+            document.getElementById('bb-period-display').textContent = bollingerBandsParams.period;
+            document.getElementById('bb-stddev-display').textContent = bollingerBandsParams.stdDev;
+
+
+            // --- Kombinasikan dan Render Tabel Sinyal Baru ---
+            signalTableBody.innerHTML = '';
+            combinedSignalData = []; // Reset array sinyal gabungan
+
+            const allDates = new Set();
+            emaDataCombined.forEach(entry => allDates.add(entry.tanggal));
+            bollingerBandsData.forEach(entry => allDates.add(entry.tanggal));
+
+            const sortedDates = Array.from(allDates).sort((a, b) => new Date(b) - new Date(a));
+
+            for (let i = 0; i < Math.min(sortedDates.length, limit); i++) {
+                const date = sortedDates[i];
+                const emaEntry = emaDataCombined.find(e => e.tanggal === date);
+                const bbEntry = bollingerBandsData.find(bb => bb.tanggal === date);
+                const currentPriceData = dataToDisplay.find(d => d.tanggal === date);
+                const rsiEntry = rsiResults.find(r => r.tanggal === date);
+
+                let emaSignal = '-';
+                let emaSignalClass = '';
+                if (emaEntry) {
+                    emaSignal = emaEntry.indikator;
+                    emaSignalClass = emaEntry.indikatorClass;
+                }
+
+                let bbSignal = '-';
+                let bbSignalDescription = '-';
+                let bbSignalClass = '';
+
+                if (bbEntry && currentPriceData) {
+                    const currentPrice = currentPriceData.hargaTerakhir;
+                    const prevPriceData = dataToDisplay.find(d => new Date(d.tanggal) < new Date(date))
+                    let prevPrice = null;
+                    if(prevPriceData) prevPrice = prevPriceData.hargaTerakhir;
+
+                    // Sinyal Beli Bollinger Bands
+                    if (currentPrice < bbEntry.lowerBand) {
+                        bbSignal = 'BUY';
+                        bbSignalDescription = 'Harga menembus Garis Bawah (Potensi Oversold)';
+                        bbSignalClass = 'bb-signal-buy';
+                        if (rsiEntry && rsiEntry.value < 30) {
+                            bbSignal = 'STRONG BUY';
+                            bbSignalDescription = 'Harga menembus Garis Bawah & RSI Oversold';
+                        }
+                    } 
+                    // Sinyal Jual Bollinger Bands
+                    else if (currentPrice > bbEntry.upperBand) {
+                        bbSignal = 'SELL';
+                        bbSignalDescription = 'Harga menembus Garis Atas (Potensi Overbought)';
+                        bbSignalClass = 'bb-signal-sell';
+                        if (rsiEntry && rsiEntry.value > 70) {
+                            bbSignal = 'STRONG SELL';
+                            bbSignalDescription = 'Harga menembus Garis Atas & RSI Overbought';
+                        }
+                    }
+                    // Persilangan Garis Tengah
+                    else if (prevPrice !== null) { 
+                        if (currentPrice > bbEntry.middleBand && prevPrice <= bbEntry.middleBand) {
+                            bbSignal = 'BUY';
+                            bbSignalDescription = 'Harga memotong Middle Band dari bawah ke atas';
+                            bbSignalClass = 'bb-signal-buy';
+                        } 
+                        else if (currentPrice < bbEntry.middleBand && prevPrice >= bbEntry.middleBand) {
+                            bbSignal = 'SELL';
+                            bbSignalDescription = 'Harga memotong Middle Band dari atas ke bawah';
+                            bbSignalClass = 'bb-signal-sell';
+                        }
+                    }
+                }
+
+                const row = signalTableBody.insertRow();
+                const dateCell = row.insertCell();
+                dateCell.classList.add('date-column');
+                dateCell.textContent = formatDateNoYear(date);
+                dateCell.onclick = function() {
+                    openDateFilterModalWithDate(date);
+                };
+
+                const emaSignalCell = row.insertCell();
+                emaSignalCell.textContent = emaSignal;
+                if (emaSignalClass) {
+                    emaSignalCell.classList.add(emaSignalClass);
+                }
+
+                const bbSignalCell = row.insertCell();
+                bbSignalCell.textContent = bbSignal;
+                if (bbSignalClass) {
+                    bbSignalCell.classList.add(bbSignalClass);
+                }
+
+                const descriptionCell = row.insertCell();
+                // Gabungkan keterangan dari EMA dan BB
+                let combinedDescription = [];
+                if (emaEntry && emaEntry.indikator !== "Neutral") {
+                    combinedDescription.push(`EMA: ${emaEntry.indikator}`);
+                }
+                if (bbSignalDescription !== '-' && bbSignalDescription !== 'Harga bergerak di antara band') {
+                    combinedDescription.push(`BB: ${bbSignalDescription}`);
+                }
+                descriptionCell.textContent = combinedDescription.join(' | ') || 'Harga bergerak di antara band';
+
+                combinedSignalData.push({
+                    tanggal: date,
+                    emaSignal: emaSignal,
+                    bbSignal: bbSignal,
+                    keterangan: combinedDescription.join(' | ') || 'Harga bergerak di antara band'
+                });
+            }
+        }
+
+        // Fungsi untuk menambahkan atau memperbarui entri riwayat harga
+        function addOrUpdateHistoryEntry(newEntry) {
+            const entryDate = new Date(newEntry.tanggal).toISOString().slice(0, 10); // Ambil tanggal saja (YYYY-MM-DD)
+
+            // Cek apakah entri untuk tanggal dan mata uang yang sama sudah ada
+            const existingIndex = allCryptoHistory.findIndex(entry =>
+                new Date(entry.tanggal).toISOString().slice(0, 10) === entryDate &&
+                entry.currency === newEntry.currency
+            );
+
+            if (existingIndex !== -1) {
+                // Jika sudah ada, perbarui entri yang ada
+                allCryptoHistory[existingIndex] = {
+                    currency: newEntry.currency,
+                    tanggal: entryDate,
+                    hargaTerakhir: newEntry.hargaTerakhir,
+                    hargaPembukaan: newEntry.hargaPembukaan,
+                    hargaTertinggi: newEntry.hargaTertinggi,
+                    hargaTerendah: newEntry.hargaTerendah,
+                    pergerakan: newEntry.pergerakan
+                };
+            } else {
+                // Jika belum ada, tambahkan entri baru
+                allCryptoHistory.push({
+                    currency: newEntry.currency,
+                    tanggal: entryDate,
+                    hargaTerakhir: newEntry.hargaTerakhir,
+                    hargaPembukaan: newEntry.hargaPembukaan,
+                    hargaTertinggi: newEntry.hargaTertinggi,
+                    hargaTerendah: newEntry.hargaTerendah,
+                    pergerakan: newEntry.pergerakan
+                });
+            }
+            // renderHistoryTables(); // Dipindahkan ke ws.onmessage untuk update real-time
+        }
+
+        // Fungsi untuk memuat riwayat harga manual dari LocalStorage
+        function loadManualHistory() {
+            const storedHistory = JSON.parse(localStorage.getItem('History-BTC')) || [];
+            // Tambahkan setiap entri manual ke riwayat gabungan
+            storedHistory.forEach(manualEntry => {
+                // Pastikan format tanggal manual sesuai (YYYY-MM-DD)
+                if (manualEntry.tanggal) {
+                     addOrUpdateHistoryEntry(manualEntry);
+                }
+            });
+             renderHistoryTables(); // Render setelah memuat semua data manual
+        }
+
+        // Fungsi untuk mengatur status indikator WebSocket
+        function setStatusIndicator(status) {
+            wsStatusIndicator.classList.remove('connected', 'disconnected', 'connecting');
+            wsStatusIndicator.classList.add(status);
+        }
+
+        // Fungsi untuk menghubungkan ke WebSocket
+        function connectWebSocket() {
+            setStatusIndicator('connecting'); // Atur status menjadi "menghubungkan"
+
+            ws = new WebSocket(websocketUrl);
+
+            ws.onopen = () => {
+                console.log('Terhubung ke server WebSocket Python');
+                setStatusIndicator('connected'); // Atur status menjadi "terhubung"
+            };
+
+            ws.onmessage = (event) => {
+                const data = JSON.parse(event.data);
+                // console.log("Data diterima:", data); // Bisa di-uncomment untuk debugging
+
+                // Pastikan data yang diterima adalah untuk BTC/IDR
+                if (data && data.symbol === "BTC/IDR") {
+                    const updateTime = `Terakhir diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
+
+                    // Update harga live (tetap dengan format Rp)
+                    if (data.price) {
+                        const currentRate = parseFloat(data.price);
+                        const formattedRate = formatPrice(currentRate); // Menggunakan formatPrice dengan Rp
+                        btcIdrRateElement.classList.remove('positive', 'negative');
+                        // Beri warna hijau jika naik, merah jika turun
+                        if (lastBtcIdrRate !== 0) {
+                            if (currentRate > lastBtcIdrRate) {
+                                btcIdrRateElement.classList.add('positive');
+                            } else if (currentRate < lastBtcIdrRate) {
+                                btcIdrRateElement.classList.add('negative');
+                            }
+                        }
+                        btcIdrRateElement.textContent = formattedRate;
+                        lastBtcIdrRate = currentRate; // Simpan harga terakhir
+                    }
+
+                    btcLastUpdateElement.textContent = updateTime; // Update waktu terakhir diperbarui
+                    if (data.high_price) btcHighPriceElement.textContent = formatPrice(data.high_price); // Dengan Rp
+                    if (data.low_price) btcLowPriceElement.textContent = formatPrice(data.low_price);   // Dengan Rp
+                    // Perubahan% di bagian atas halaman (tetap menggunakan formatPercentage)
+                    if (data.percentage_change) btcPercentageChangeElement.innerHTML = formatPercentage(data.percentage_change);
+
+                    // Update harga beli/jual terbaik (tetap dengan format Rp)
+                    if (data.order_book && data.order_book.buy_orders && data.order_book.buy_orders.length > 0) {
+                        btcBestBuyElement.textContent = formatPrice(data.order_book.buy_orders[0][0]); // Ambil harga bid terbaik
+                    } else {
+                        btcBestBuyElement.textContent = 'N/A';
+                    }
+
+                    if (data.order_book && data.order_book.sell_orders && data.order_book.sell_orders.length > 0) {
+                        btcBestSellElement.textContent = formatPrice(data.order_book.sell_orders[0][0]); // Ambil harga ask terbaik
+                    } else {
+                        btcBestSellElement.textContent = 'N/A';
+                    }
+
+                    // --- Modifikasi di sini untuk memastikan data real-time hari ini selalu di paling atas ---
+                    // Tambahkan/perbarui data live ke riwayat
+                    if (data.price && data.high_price && data.low_price && data.percentage_change) {
+                        const today = new Date();
+                        const todayDateString = today.toISOString().slice(0, 10); // Format-MM-DD
+                        
+                        // Harga pembukaan bisa kita asumsikan sama dengan harga terakhir sebelumnya
+                        // Jika tidak ada data sebelumnya, kita bisa mengasumsikan harga pembukaan sama dengan harga terakhir saat ini,
+                        // atau mengambil dari data histori sebelumnya jika ada (lebih kompleks).
+                        // Untuk saat ini, kita akan membuat entri pembukaan yang sederhana.
+                        let openPrice = parseFloat(data.price); // Default: harga pembukaan = harga terakhir
+
+                        // Jika ada data historis untuk hari sebelumnya, kita bisa mencoba mengambil harga terakhirnya
+                        // sebagai harga pembukaan hari ini. Ini akan membutuhkan pencarian data historis untuk hari sebelumnya.
+                        // Namun, karena data live hanya memberi tahu harga saat ini, tinggi, rendah, kita tidak punya harga pembukaan real-time.
+                        // Asumsi sederhana: jika ada entri untuk hari ini dan ini bukan update pertama, gunakan harga pembukaan yang sudah ada.
+                        const existingEntryForToday = allCryptoHistory.find(entry => 
+                            entry.tanggal === todayDateString && entry.currency === data.symbol.split('/')[0]
+                        );
+                        if (existingEntryForToday && existingEntryForToday.hargaPembukaan) {
+                            openPrice = existingEntryForToday.hargaPembukaan;
+                        }
+
+
+                        const liveEntry = {
+                            currency: data.symbol.split('/')[0], // Ambil "BTC" dari "BTC/IDR"
+                            tanggal: todayDateString,
+                            hargaTerakhir: parseFloat(data.price),
+                            hargaPembukaan: openPrice, 
+                            hargaTertinggi: parseFloat(data.high_price),
+                            hargaTerendah: parseFloat(data.low_price),
+                            pergerakan: data.percentage_change.toString()
+                        };
+
+                        // Cari index entri hari ini
+                        const existingIndex = allCryptoHistory.findIndex(entry => 
+                            entry.tanggal === todayDateString && entry.currency === liveEntry.currency
+                        );
+
+                        if (existingIndex !== -1) {
+                            // Jika ada, perbarui entri yang sudah ada
+                            allCryptoHistory[existingIndex] = liveEntry;
+                        } else {
+                            // Jika belum ada, tambahkan ke array
+                            allCryptoHistory.push(liveEntry);
+                        }
+
+                        // Setelah memperbarui, render ulang tabel
+                        renderHistoryTables();
+
+                        // PENTING: Setelah renderHistoryTables() selesai, panggil fungsi untuk id="data-muncul-indicator"
+                        tanggalIndicatorInput.value = todayDateString; // Pastikan input tanggal hari ini terpilih
+                        displayIndicatorSignalForDate(todayDateString); // Menggunakan fungsi gabungan
+                        updateEmaChartSignalIndicator(todayDateString); // Update chart EMA
+                        updateBbChartSignalIndicator(todayDateString); // Update chart BB
+                    }
+                } else {
+                    console.warn("Menerima format data tidak valid atau simbol tidak terduga:", data);
+                }
+            };
+
+            ws.onclose = (event) => {
+                console.warn('Koneksi WebSocket terputus:', event);
+                setStatusIndicator('disconnected'); // Atur status menjadi "terputus"
+                // Coba hubungkan kembali setelah 3 detik
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            ws.onerror = (error) => {
+                console.error('Terjadi Error WebSocket:', error);
+                setStatusIndicator('disconnected'); // Atur status menjadi "terputus"
+                ws.close(); // Tutup koneksi yang bermasalah
+            };
+        }
+
+        // --- Fungsi-fungsi untuk Modal Filter Tanggal ---
+
+        // Fungsi untuk membuka modal filter tanggal
+        function openDateFilterModal() {
+            dateFilterModal.style.display = 'flex'; // Gunakan flex untuk pusatkan modal
+        }
+
+        // Fungsi untuk membuka modal filter tanggal dan mengisi tanggal mulai
+        function openDateFilterModalWithDate(dateString) {
+            tanggalMulaiInput.value = dateString;
+            tanggalSelesaiInput.value = ''; // Kosongkan tanggal selesai
+            openDateFilterModal();
+        }
+
+        // Fungsi untuk menutup modal filter tanggal
+        function closeDateFilterModalFn() {
+            dateFilterModal.style.display = 'none';
+        }
+
+        // Event listener untuk tombol Berlakukan di modal
+        berlakukanFilterBtn.onclick = function() {
+            const startDate = tanggalMulaiInput.value;
+            const endDate = tanggalSelesaiInput.value;
+
+            if (startDate && endDate) {
+                filterStartDate = startDate;
+                filterEndDate = endDate;
+                renderHistoryTables(); // Render ulang tabel dengan filter
+                closeDateFilterModalFn(); // Tutup modal
+                alert(`Menampilkan riwayat dari ${startDate} hingga ${endDate}.`); // Alert konfirmasi
+            } else if (startDate && !endDate) {
+                 // Jika hanya tanggal mulai yang diisi, asumsikan hingga hari ini
+                filterStartDate = startDate;
+                filterEndDate = new Date().toISOString().slice(0, 10);
+                renderHistoryTables();
+                closeDateFilterModalFn();
+                alert(`Menampilkan riwayat dari ${startDate} hingga hari ini.`);
+            }
+            else {
+                alert('Harap pilih setidaknya tanggal mulai untuk memfilter.');
+            }
+        };
+
+        // Event listener untuk tombol Reset Tanggal di modal
+        resetFilterDatesBtn.onclick = function() {
+            tanggalMulaiInput.value = '';
+            tanggalSelesaiInput.value = '';
+            filterStartDate = null; // Hapus filter
+            filterEndDate = null;   // Hapus filter
+            renderHistoryTables();  // Render ulang tabel tanpa filter
+            closeDateFilterModalFn(); // Tutup modal
+            alert('Filter tanggal telah di-reset. Menampilkan semua riwayat.');
+        };
+
+        // --- FUNGSI BARU: Menghapus data dari LocalStorage berdasarkan tanggal ---
+        function deleteHistoryByDate() {
+            // Meminta password sebelum melanjutkan penghapusan
+            const inputPassword = prompt('Masukkan password untuk menghapus data:');
+            if (inputPassword !== PASSWORD_HAPUS) {
+                alert('Password salah. Penghapusan dibatalkan.');
+                return;
+            }
+
+            const startDateStr = tanggalMulaiInput.value;
+            const endDateStr = tanggalSelesaiInput.value;
+
+            if (!startDateStr) {
+                alert('Harap pilih setidaknya tanggal mulai untuk menghapus data.');
+                return;
+            }
+
+            const confirmDelete = confirm(`Anda yakin ingin menghapus riwayat harga dari ${startDateStr} ${endDateStr ? 'hingga ' + endDateStr : 'saja'}?`);
+            if (!confirmDelete) {
+                return; // Batalkan jika pengguna tidak mengkonfirmasi
+            }
+
+            const start = new Date(startDateStr);
+            start.setHours(0, 0, 0, 0);
+
+            let end;
+            if (endDateStr) {
+                end = new Date(endDateStr);
+                end.setHours(23, 59, 59, 999);
+            } else {
+                // Jika hanya tanggal mulai yang diisi, hapus hanya pada tanggal itu
+                end = new Date(startDateStr);
+                end.setHours(23, 59, 59, 999);
+            }
+            
+            // Filter allCryptoHistory (data yang ada di memori)
+            const updatedAllCryptoHistory = allCryptoHistory.filter(entry => {
+                const entryDate = new Date(entry.tanggal);
+                entryDate.setHours(0, 0, 0, 0); // Samakan dengan awal hari untuk perbandingan
+                return !(entryDate >= start && entryDate <= end); // Pertahankan yang TIDAK berada dalam rentang
+            });
+
+            // Update allCryptoHistory dengan data yang sudah difilter
+            allCryptoHistory = updatedAllCryptoHistory;
+
+            // Simpan kembali data yang sudah diperbarui ke localStorage
+            // Hanya simpan entri yang berasal dari sumber "manual" ke localStorage,
+            // atau lebih baik, hapus semua entri BTC yang dihapus dan simpan kembali
+            // hanya entri manual yang tersisa.
+            const manualHistoryToKeep = allCryptoHistory.filter(entry => entry.currency === 'BTC'); // Asumsi hanya BTC yang punya history manual
+
+            // Ini akan memastikan hanya data manual yang tidak terhapus yang disimpan kembali
+            // Jika ada data "live" yang tersimpan di "History-BTC" sebelumnya,
+            // ini akan menimpanya.
+            localStorage.setItem('History-BTC', JSON.stringify(manualHistoryToKeep));
+            
+            renderHistoryTables(); // Render ulang tabel
+            closeDateFilterModalFn(); // Tutup modal
+            alert('Data riwayat telah dihapus sesuai permintaan.');
+        }
+
+        // Event listener untuk tombol Hapus Data
+        deleteHistoryBtn.onclick = deleteHistoryByDate;
+
+        // Event listener untuk tombol close modal
+        closeDateFilterModal.onclick = function() {
+            closeDateFilterModalFn();
+        };
+
+        // Event listener untuk menutup modal jika klik di luar area konten
+        window.onclick = function(event) {
+            if (event.target == dateFilterModal || event.target == emaPeriodModal || event.target == bollingerBandsModal) {
+                closeDateFilterModalFn();
+                closeEmaPeriodModalFn();
+                closeBollingerBandsModalFn();
+            }
+        };
+
+        // --- Fungsi-fungsi untuk Modal EMA Baru ---
+
+        // Fungsi untuk membuka modal periode EMA
+        function openEmaPeriodModal(emaIndex) {
+            currentEmaIndexToSet = emaIndex;
+            emaPeriodInput.value = emaPeriods[emaIndex]; // Isi input dengan nilai periode saat ini
+            emaPeriodModal.style.display = 'flex';
+        }
+
+        // Fungsi untuk menutup modal periode EMA
+        function closeEmaPeriodModalFn() {
+            emaPeriodModal.style.display = 'none';
+        }
+
+        // Event listener untuk tombol 'Atur Periode EMA'
+        setEmaPeriodBtn.onclick = function() {
+            const newPeriod = parseInt(emaPeriodInput.value);
+            if (!isNaN(newPeriod) && newPeriod > 0) {
+                emaPeriods[currentEmaIndexToSet] = newPeriod;
+                renderHistoryTables(); // Render ulang tabel dengan periode EMA baru
+                closeEmaPeriodModalFn();
+                alert(`Periode EMA (${currentEmaIndexToSet}) telah diatur ke: ${newPeriod}`);
+            } else {
+                alert('Periode EMA harus berupa angka positif.');
+            }
+        };
+
+        // Event listener untuk tombol close modal EMA
+        closeEmaPeriodModal.onclick = function() {
+            closeEmaPeriodModalFn();
+        };
+
+        // Tambahkan event listener ke header EMA yang bisa diklik
+        document.querySelectorAll('.ema-header-clickable').forEach(header => {
+            header.addEventListener('click', function() {
+                const emaIndex = parseInt(this.dataset.emaIndex);
+                openEmaPeriodModal(emaIndex);
+            });
+        });
+
+        // --- Fungsi-fungsi untuk Modal Bollinger Bands Baru ---
+        function openBollingerBandsModal(paramToSet) {
+            // Bisa diperluas untuk mengisi input secara spesifik jika diperlukan
+            bbPeriodInput.value = bollingerBandsParams.period;
+            bbStdDevInput.value = bollingerBandsParams.stdDev;
+            bollingerBandsModal.style.display = 'flex';
+        }
+
+        function closeBollingerBandsModalFn() {
+            bollingerBandsModal.style.display = 'none';
+        }
+
+        setBollingerBandsBtn.onclick = function() {
+            const newPeriod = parseInt(bbPeriodInput.value);
+            const newStdDev = parseFloat(bbStdDevInput.value);
+
+            if (!isNaN(newPeriod) && newPeriod > 0 && !isNaN(newStdDev) && newStdDev > 0) {
+                bollingerBandsParams.period = newPeriod;
+                bollingerBandsParams.stdDev = newStdDev;
+                renderHistoryTables();
+                closeBollingerBandsModalFn();
+                alert(`Periode Bollinger Bands diatur ke: ${newPeriod}, StdDev: ${newStdDev}`);
+            } else {
+                alert('Periode dan Standar Deviasi Bollinger Bands harus berupa angka positif.');
+            }
+        };
+
+        closeBollingerBandsModal.onclick = function() {
+            closeBollingerBandsModalFn();
+        };
+
+        // Tambahkan event listener ke header Bollinger Bands yang bisa diklik
+        document.querySelectorAll('.bollinger-bands-header-clickable').forEach(header => {
+            header.addEventListener('click', function() {
+                const param = this.dataset.bbParam; // "period" atau "stddev"
+                openBollingerBandsModal(param);
+            });
+        });
+
+        // ====================================================================
+        // KODE TAMBAHAN BARU UNTUK MEMUNCULKAN DATA SINYAL PADA id="data-muncul-indicator"
+        // ====================================================================
+
+        const tanggalIndicatorInput = document.getElementById('tanggal-indicator'); // Ubah ID
+        const dataMunculIndicatorDiv = document.getElementById('data-muncul-indicator'); // Ubah ID
+
+        // Event listener saat tanggal di input `tanggal-indicator` berubah
+        tanggalIndicatorInput.addEventListener('change', function() {
+            const selectedDate = this.value; // Tanggal yang dipilih dalam formatYYYY-MM-DD
+            displayIndicatorSignalForDate(selectedDate); // Menggunakan fungsi gabungan
+            updateEmaChartSignalIndicator(selectedDate); // Panggil fungsi untuk chart EMA
+            updateBbChartSignalIndicator(selectedDate); // Panggil fungsi untuk chart BB
+        });
+
+        // Fungsi untuk menampilkan data "Kekuatan Sinyal (%)" dan "Sinyal"
+        // dari `emaPercentageData` dan `bbPercentageData` berdasarkan tanggal yang dipilih.
+        function displayIndicatorSignalForDate(dateString) {
+            const formattedDate = new Date(dateString).toISOString().slice(0, 10);
+            
+            const foundEmaData = emaPercentageData.find(entry => entry.tanggal === formattedDate);
+            const foundBbPercentageData = bbPercentageData.find(entry => entry.tanggal === formattedDate);
+
+            let htmlContent = '';
+
+            // Display EMA Signal Data
+            if (foundEmaData) {
+                let emaSignalClass = 'neutral-signal';
+                if (foundEmaData.sinyal.includes('BUY')) {
+                    emaSignalClass = 'positive-signal';
+                } else if (foundEmaData.sinyal.includes('SELL')) {
+                    emaSignalClass = 'negative-signal';
+                }
+                htmlContent += `
+                    <p class="signal-label">Kekuatan Sinyal EMA:</p>
+                    <p class="signal-value ${parseFloat(foundEmaData.kekuatanSinyal) >= 0 ? 'positive-signal' : 'negative-signal'}">${formatPercentage(foundEmaData.kekuatanSinyal)}</p>
+                    <p class="signal-label">Sinyal EMA:</p>
+                    <p class="signal-value ${emaSignalClass}">${foundEmaData.sinyal}</p>
+                `;
+            }
+
+            // Display BB Signal Data
+            if (foundBbPercentageData) {
+                let bbSignalClass = 'neutral-signal';
+                if (foundBbPercentageData.sinyal.includes('BUY')) {
+                    bbSignalClass = 'positive-signal';
+                } else if (foundBbPercentageData.sinyal.includes('SELL')) {
+                    bbSignalClass = 'negative-signal';
+                }
+                 htmlContent += `
+                    <p class="signal-label">Kekuatan Sinyal BB:</p>
+                    <p class="signal-value ${parseFloat(foundBbPercentageData.kekuatanSinyal) >= 0 ? 'positive-signal' : 'negative-signal'}">${formatPercentage(foundBbPercentageData.kekuatanSinyal)}</p>
+                    <p class="signal-label">Sinyal BB:</p>
+                    <p class="signal-value ${bbSignalClass}">${foundBbPercentageData.sinyal}</p>
+                `;
+            }
+            
+            if (!foundEmaData && !foundBbPercentageData) {
+                htmlContent = '<p>Data sinyal EMA dan Bollinger Bands tidak tersedia untuk tanggal ini.</p>';
+            }
+
+            dataMunculIndicatorDiv.innerHTML = htmlContent;
+        }
+
+        // ====================================================================
+        // AKHIR KODE TAMBAHAN BARU
+        // ====================================================================
+
+        // ====================================================================
+        // KODE BARU UNTUK GRAFIK WARNA DENGAN INDIKATOR SINYAL (Dipisahkan)
+        // ====================================================================
+
+        const emaChartSignalIndicator = document.getElementById('ema-chart-signal-indicator');
+        const emaChartSignalValueDisplay = document.getElementById('ema-chart-signal-value-display');
+
+        const bbChartSignalIndicator = document.getElementById('bb-chart-signal-indicator'); // Elemen BB baru
+        const bbChartSignalValueDisplay = document.getElementById('bb-chart-signal-value-display'); // Elemen BB baru
+
+        function updateEmaChartSignalIndicator(dateString) {
+            const formattedDate = new Date(dateString).toISOString().slice(0, 10);
+            const foundEmaData = emaPercentageData.find(entry => entry.tanggal === formattedDate);
+
+            if (foundEmaData) {
+                let positionPercentage;
+                const signalStrength = foundEmaData.kekuatanSinyal;
+
+                if (signalStrength > 20) {
+                    positionPercentage = 2; // Strong Buy Kuat
+                } else if (signalStrength > 10) {
+                    positionPercentage = 14; // Strong Buy Medium
+                } else if (signalStrength > 5) {
+                    positionPercentage = 25; // Strong Buy Lemah
+                } else if (signalStrength > 0.01) {
+                    positionPercentage = 36; // Buy
+                } else if (signalStrength >= -0.01 && signalStrength <= 0.01) {
+                    positionPercentage = 47; // Neutral
+                } else if (signalStrength <= -20) { 
+                    positionPercentage = 91;
+                } else if (signalStrength <= -10) { 
+                    positionPercentage = 80;
+                } else if (signalStrength <= -5) { 
+                    positionPercentage = 69;
+                } else if (signalStrength < -0.01) { 
+                    positionPercentage = 58;
+                }
+
+                emaChartSignalIndicator.style.display = 'block';
+                emaChartSignalIndicator.style.top = `${positionPercentage}%`;
+                emaChartSignalValueDisplay.textContent = `Sinyal: ${foundEmaData.sinyal} (${signalStrength.toFixed(2)}%)`;
+                emaChartSignalValueDisplay.style.color = (signalStrength >= 0) ? '#00B050' : '#FF0000'; 
+            } else {
+                emaChartSignalIndicator.style.display = 'none';
+                emaChartSignalValueDisplay.textContent = 'Pilih tanggal untuk melihat sinyal.';
+                emaChartSignalValueDisplay.style.color = '#e0e0e0';
+            }
+        }
+
+        // Fungsi baru untuk Bollinger Bands Chart
+        function updateBbChartSignalIndicator(dateString) {
+            const formattedDate = new Date(dateString).toISOString().slice(0, 10);
+            const foundBbData = bbPercentageData.find(entry => entry.tanggal === formattedDate); // Ambil dari bbPercentageData
+
+            if (foundBbData) {
+                let positionPercentage;
+                const signalStrength = foundBbData.kekuatanSinyal; // Gunakan kekuatan sinyal BB
+
+                if (signalStrength > 20) {
+                    positionPercentage = 2; // Strong Buy Kuat
+                } else if (signalStrength > 10) {
+                    positionPercentage = 14; // Strong Buy Medium
+                } else if (signalStrength > 5) {
+                    positionPercentage = 25; // Strong Buy Lemah
+                } else if (signalStrength > 0.01) {
+                    positionPercentage = 36; // Buy
+                } else if (signalStrength >= -0.01 && signalStrength <= 0.01) {
+                    positionPercentage = 47; // Neutral
+                } else if (signalStrength <= -20) { 
+                    positionPercentage = 91;
+                } else if (signalStrength <= -10) { 
+                    positionPercentage = 80;
+                } else if (signalStrength <= -5) { 
+                    positionPercentage = 69;
+                } else if (signalStrength < -0.01) { 
+                    positionPercentage = 58;
+                }
+
+                bbChartSignalIndicator.style.display = 'block';
+                bbChartSignalIndicator.style.top = `${positionPercentage}%`;
+                bbChartSignalValueDisplay.textContent = `Sinyal: ${foundBbData.sinyal} (${signalStrength.toFixed(2)}%)`;
+                bbChartSignalValueDisplay.style.color = (signalStrength >= 0) ? '#00B050' : '#FF0000';
+            } else {
+                bbChartSignalIndicator.style.display = 'none';
+                bbChartSignalValueDisplay.textContent = 'Pilih tanggal untuk melihat sinyal.';
+                bbChartSignalValueDisplay.style.color = '#e0e0e0';
+            }
+        }
+
+        // ====================================================================
+        // AKHIR KODE BARU UNTUK GRAFIK WARNA
+        // ====================================================================
+
+
+        // Saat dokumen HTML selesai dimuat, panggil fungsi-fungsi ini
+        document.addEventListener('DOMContentLoaded', () => {
+            loadManualHistory(); // Muat riwayat manual dari LocalStorage
+            connectWebSocket(); // Mulai koneksi WebSocket
+
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            const todayFormatted = `${year}-${month}-${day}`;
+            tanggalIndicatorInput.value = todayFormatted; // Tetap atur tanggal input ke hari ini
+        });
+        
+        
+        
+        function updateTime() {
+            const now = new Date();
+
+            // Options for formatting the date and time
+            const options = {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hourCycle: 'h23', // Use 24-hour format
+                timeZone: 'Asia/Jakarta' // Set timezone to WIB
+            };
+
+            const formatter = new Intl.DateTimeFormat('id-ID', options);
+            const formattedDateTime = formatter.format(now);
+
+            // Replace "pukul" with "jam" if preferred, though "pukul" is common in Indonesia for time
+            document.getElementById('live-datetime').textContent = formattedDateTime.replace('pukul', 'pukul');
+
+            // Countdown logic
+            const targetHour = 7; // 07:00 WIB
+            const targetDate = new Date(now);
+            targetDate.setHours(targetHour, 0, 0, 0); // Set to 07:00:00.000 today
+
+            // If current time is past 07:00 WIB, set target to 07:00 WIB tomorrow
+            if (now.getHours() >= targetHour && now.getMinutes() > 0 || (now.getHours() === targetHour && now.getMinutes() >= 0 && now.getSeconds() > 0)) {
+                targetDate.setDate(targetDate.getDate() + 1);
+            }
+
+            let timeLeft = targetDate.getTime() - now.getTime();
+
+            // Ensure timeLeft is not negative
+            if (timeLeft < 0) {
+                // This case should ideally not happen with the logic above, but as a fallback
+                targetDate.setDate(targetDate.getDate() + 1);
+                timeLeft = targetDate.getTime() - now.getTime();
+            }
+
+            const hours = Math.floor((timeLeft / (1000 * 60 * 60)) % 24);
+            const minutes = Math.floor((timeLeft / (1000 * 60)) % 60);
+            const seconds = Math.floor((timeLeft / 1000) % 60);
+
+            // Format with leading zeros if needed
+            const formattedHours = String(hours).padStart(2, '0');
+            const formattedMinutes = String(minutes).padStart(2, '0');
+            const formattedSeconds = String(seconds).padStart(2, '0');
+
+            document.getElementById('countdown').textContent = `${formattedHours} jam ${formattedMinutes} menit ${formattedSeconds} detik`;
+        }
+
+        // Update time every second
+        setInterval(updateTime, 1000);
+
+        // Initial call to display immediately
+        updateTime();
+        
+        
+        
+        
+        
+        
+        
+        async function getBtcVolumes() {
+            const apiUrl = 'https://indodax.com/api/btc_idr/ticker';
+            const btcVolumeInfoBtcDiv = document.getElementById('btcVolumeInfoBtc');
+            const btcVolumeInfoIdrDiv = document.getElementById('btcVolumeInfoIdr');
+
+            // Set initial loading state
+            btcVolumeInfoBtcDiv.innerHTML = 'Memuat...';
+            btcVolumeInfoIdrDiv.innerHTML = 'Memuat...';
+
+            try {
+                const response = await fetch(apiUrl);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                if (data && data.ticker) {
+                    const ticker = data.ticker;
+
+                    // Update BTC volume
+                    const volumeBtc = parseFloat(ticker.vol_btc).toLocaleString('id-ID', { maximumFractionDigits: 8 });
+                    btcVolumeInfoBtcDiv.innerHTML = `${volumeBtc} BTC`; // Added 'BTC' for clarity
+
+                    // Update IDR volume
+                    const volumeIdr = parseFloat(ticker.vol_idr).toLocaleString('id-ID', { style: 'currency', currency: 'IDR' });
+                    btcVolumeInfoIdrDiv.innerHTML = `${volumeIdr}`;
+                } else {
+                    btcVolumeInfoBtcDiv.innerHTML = '<span class="error">Data tidak ditemukan.</span>';
+                    btcVolumeInfoIdrDiv.innerHTML = '<span class="error">Data tidak ditemukan.</span>';
+                }
+            } catch (error) {
+                console.error('Gagal mengambil data volume BTC/IDR:', error);
+                const errorMessage = `<span class="error">Gagal memuat: ${error.message}. Coba lagi nanti.</span>`;
+                btcVolumeInfoBtcDiv.innerHTML = errorMessage;
+                btcVolumeInfoIdrDiv.innerHTML = errorMessage;
+            }
+        }
+
+        // Panggil fungsi saat halaman dimuat
+        getBtcVolumes();
+
+        // Opsional: Perbarui data setiap 1 menit (60000 milidetik)
+        setInterval(getBtcVolumes, 60000);
+
+    </script>
+</body>
+</html>
