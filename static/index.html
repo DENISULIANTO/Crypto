@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Live Kurs Kripto (BTC/IDR & USDT/IDR) via Python WebSocket</title>
+    <title>Live Kurs Kripto (BTC/IDR, USDT/IDR, SOL/IDR, ADA/IDR, dll) via Python WebSocket</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
@@ -203,7 +203,7 @@
         <p id="live-datetime" style="font-size: 10px; color: #aaa; margin-top: 5px;"></p>
         <p id="countdown-timer">Memuat hitungan mundur...</p>
 
-       <a href="BTC_IDR-2.html" style="text-decoration:none">
+       <a href="Pilihan-Koin 2/BTC_IDR-2.html" style="text-decoration:none">
         <div class="currency-boxes-wrapper">
             <div class = "currency-box btc-idr">
                 <h2>Bitcoin (BTC)</h2>
@@ -218,7 +218,7 @@
        </a>
 
 
-       <a href="ETH_IDR-2.html" style="text-decoration:none">
+       <a href="Pilihan-Koin 2/ETH_IDR-2.html" style="text-decoration:none">
             <div class="currency-box eth-idr">
                 <h2>Ethereum (ETH)</h2>
                 <div class="rate-info">
@@ -232,7 +232,7 @@
        </a>
        
        
-        <a href="XRP_IDR-2.html" style="text-decoration:none">
+        <a href="Pilihan-Koin 2/XRP_IDR-2.html" style="text-decoration:none">
             <div class="currency-box xrp-idr">
                 <h2>Ripple (XRP)</h2>
                 <div class="rate-info">
@@ -245,7 +245,7 @@
             </div>
         </a>
 
-        <a href="ETC_IDR-2.html" style="text-decoration:none">
+        <a href="Pilihan-Koin 2/ETC_IDR-2.html" style="text-decoration:none">
             <div class="currency-box etc-idr">
                 <h2>Ethereum Classic </h2>
                 <div class="rate-info">
@@ -258,7 +258,7 @@
             </div>
         </a>
 
-       <a href="" style="text-decoration:none">
+       <a href="Pilihan-Koin 2/USDT_IDR-2.html" style="text-decoration:none">
             <div class="currency-box usdt-idr">
                 <h2>USDT (USDT)</h2>
                 <div class="rate-info">
@@ -271,7 +271,7 @@
             </div>
        </a>
 
-       <a href="" style="text-decoration:none">
+       <a href="Pilihan-Koin 2/DOGE_IDR-2.html" style="text-decoration:none">
             <div class="currency-box doge-idr">
                 <h2>Dogecoin (DOGE)</h2>
                 <div class="rate-info">
@@ -282,10 +282,35 @@
                     <p class="last-update" id="doge-last-update">Terakhir diperbarui: -</p>
                 </div>
             </div>
-            </div>
        </a>
 
-       <div class="volume-table-container">
+        <a href="Pilihan-Koin 2/SOL_IDR-2.html" style="text-decoration:none">
+            <div class="currency-box sol-idr">
+                <h2>Solana (SOL)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="sol-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="sol-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="sol-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="sol-volume-24h-display">Volume (24j): <span id="sol-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="sol-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+        </a>
+
+        <a href="Pilihan-Koin 2/ADA_IDR-2.html" style="text-decoration:none">
+            <div class="currency-box ada-idr">
+                <h2>Cardano (ADA)</h2>
+                <div class="rate-info">
+                    <p class="rate-value" id="ada-idr-rate">Memuat...</p>
+                    <p class="detail-info">Tertinggi (24j): <span id="ada-high-price">Memuat...</span></p>
+                    <p class="detail-info">Terendah (24j): <span id="ada-low-price">Memuat...</span></p>
+                    <p class="volume-display" id="ada-volume-24h-display">Volume (24j): <span id="ada-volume-24h">Memuat...</span></p>
+                    <p class="last-update" id="ada-last-update">Terakhir diperbarui: -</p>
+                </div>
+            </div>
+        </a>
+
+        </div> <div class="volume-table-container">
            <h2>Volume Perdagangan 24 Jam</h2>
            <table class="volume-table">
                <thead>
@@ -319,6 +344,14 @@
                        <td>Dogecoin (DOGE)</td>
                        <td id="table-doge-volume-24h">Memuat...</td>
                    </tr>
+                   <tr>
+                       <td>Solana (SOL)</td>
+                       <td id="table-sol-volume-24h">Memuat...</td>
+                   </tr>
+                   <tr>
+                       <td>Cardano (ADA)</td>
+                       <td id="table-ada-volume-24h">Memuat...</td>
+                   </tr>
                </tbody>
            </table>
        </div>
@@ -331,13 +364,15 @@
     </div>
 
 <script>
-    // NEW: Global variables to store the last 24h volume for each currency
+    // Global variables to store the last 24h volume for each currency
     let lastBtcVolume24h = 0;
     let lastUsdtVolume24h = 0;
     let lastEthVolume24h = 0;
     let lastDogeVolume24h = 0;
     let lastXrpVolume24h = 0;
     let lastEtcVolume24h = 0;
+    let lastSolVolume24h = 0; // NEW: for SOL
+    let lastAdaVolume24h = 0; // NEW: for ADA
 
 
     const btcIdrRateElement = document.getElementById('btc-idr-rate');
@@ -347,7 +382,6 @@
     const btcVolume24hDisplay = document.getElementById('btc-volume-24h-display');
     const btcLastUpdateElement = document.getElementById('btc-last-update');
     let lastBtcIdrRate = 0;
-    // NEW: Table element for BTC volume
     const tableBtcVolume24hElement = document.getElementById('table-btc-volume-24h');
 
 
@@ -358,7 +392,6 @@
     const usdtVolume24hDisplay = document.getElementById('usdt-volume-24h-display');
     const usdtLastUpdateElement = document.getElementById('usdt-last-update');
     let lastUsdtIdrRate = 0;
-    // NEW: Table element for USDT volume
     const tableUsdtVolume24hElement = document.getElementById('table-usdt-volume-24h');
 
 
@@ -369,7 +402,6 @@
     const ethVolume24hDisplay = document.getElementById('eth-volume-24h-display');
     const ethLastUpdateElement = document.getElementById('eth-last-update');
     let lastEthIdrRate = 0;
-    // NEW: Table element for ETH volume
     const tableEthVolume24hElement = document.getElementById('table-eth-volume-24h');
 
 
@@ -380,7 +412,6 @@
     const dogeVolume24hDisplay = document.getElementById('doge-volume-24h-display');
     const dogeLastUpdateElement = document.getElementById('doge-last-update');
     let lastDogeIdrRate = 0;
-    // NEW: Table element for DOGE volume
     const tableDogeVolume24hElement = document.getElementById('table-doge-volume-24h');
 
 
@@ -391,7 +422,6 @@
     const xrpVolume24hDisplay = document.getElementById('xrp-volume-24h-display');
     const xrpLastUpdateElement = document.getElementById('xrp-last-update');
     let lastXrpIdrRate = 0;
-    // NEW: Table element for XRP volume
     const tableXrpVolume24hElement = document.getElementById('table-xrp-volume-24h');
 
 
@@ -402,8 +432,27 @@
     const etcVolume24hDisplay = document.getElementById('etc-volume-24h-display');
     const etcLastUpdateElement = document.getElementById('etc-last-update');
     let lastEtcIdrRate = 0;
-    // NEW: Table element for ETC volume
     const tableEtcVolume24hElement = document.getElementById('table-etc-volume-24h');
+
+    // NEW: Elements for SOL/IDR
+    const solIdrRateElement = document.getElementById('sol-idr-rate');
+    const solHighPriceElement = document.getElementById('sol-high-price');
+    const solLowPriceElement = document.getElementById('sol-low-price');
+    const solVolume24hElement = document.getElementById('sol-volume-24h');
+    const solVolume24hDisplay = document.getElementById('sol-volume-24h-display');
+    const solLastUpdateElement = document.getElementById('sol-last-update');
+    let lastSolIdrRate = 0;
+    const tableSolVolume24hElement = document.getElementById('table-sol-volume-24h');
+
+    // NEW: Elements for ADA/IDR
+    const adaIdrRateElement = document.getElementById('ada-idr-rate');
+    const adaHighPriceElement = document.getElementById('ada-high-price');
+    const adaLowPriceElement = document.getElementById('ada-low-price');
+    const adaVolume24hElement = document.getElementById('ada-volume-24h');
+    const adaVolume24hDisplay = document.getElementById('ada-volume-24h-display');
+    const adaLastUpdateElement = document.getElementById('ada-last-update');
+    let lastAdaIdrRate = 0;
+    const tableAdaVolume24hElement = document.getElementById('table-ada-volume-24h');
 
 
     const wsStatusIndicator = document.getElementById('ws-status-indicator');
@@ -498,6 +547,8 @@
         else if (symbol === "DOGE/IDR") lastDogeVolume24h = currentVolume;
         else if (symbol === "XRP/IDR") lastXrpVolume24h = currentVolume;
         else if (symbol === "ETC/IDR") lastEtcVolume24h = currentVolume;
+        else if (symbol === "SOL/IDR") lastSolVolume24h = currentVolume; // NEW
+        else if (symbol === "ADA/IDR") lastAdaVolume24h = currentVolume; // NEW
     }
 
 
@@ -581,6 +632,30 @@
                     lastKnownVolume24h = lastEtcVolume24h;
                     tableVolumeElement = tableEtcVolume24hElement;
                 }
+                // NEW: Handle SOL/IDR data
+                else if (data.symbol === "SOL/IDR") {
+                    targetRateElement = solIdrRateElement;
+                    targetLastUpdateElement = solLastUpdateElement;
+                    targetHighPriceElement = solHighPriceElement;
+                    targetLowPriceElement = solLowPriceElement;
+                    targetVolume24hElement = solVolume24hElement;
+                    targetVolume24hDisplayElement = solVolume24hDisplay;
+                    lastKnownRate = lastSolIdrRate;
+                    lastKnownVolume24h = lastSolVolume24h;
+                    tableVolumeElement = tableSolVolume24hElement;
+                }
+                // NEW: Handle ADA/IDR data
+                else if (data.symbol === "ADA/IDR") {
+                    targetRateElement = adaIdrRateElement;
+                    targetLastUpdateElement = adaLastUpdateElement;
+                    targetHighPriceElement = adaHighPriceElement;
+                    targetLowPriceElement = adaLowPriceElement;
+                    targetVolume24hElement = adaVolume24hElement;
+                    targetVolume24hDisplayElement = adaVolume24hDisplay;
+                    lastKnownRate = lastAdaIdrRate;
+                    lastKnownVolume24h = lastAdaVolume24h;
+                    tableVolumeElement = tableAdaVolume24hElement;
+                }
 
 
                 if (targetRateElement) {
@@ -603,6 +678,8 @@
                         else if (data.symbol === "DOGE/IDR") lastDogeIdrRate = currentRate;
                         else if (data.symbol === "XRP/IDR") lastXrpIdrRate = currentRate;
                         else if (data.symbol === "ETC/IDR") lastEtcIdrRate = currentRate;
+                        else if (data.symbol === "SOL/IDR") lastSolIdrRate = currentRate; // NEW
+                        else if (data.symbol === "ADA/IDR") lastAdaIdrRate = currentRate; // NEW
                     }
 
                     targetLastUpdateElement.textContent = updateTime;
@@ -635,6 +712,8 @@
                         else if (data.symbol === "DOGE/IDR") lastDogeVolume24h = currentVolume;
                         else if (data.symbol === "XRP/IDR") lastXrpVolume24h = currentVolume;
                         else if (data.symbol === "ETC/IDR") lastEtcVolume24h = currentVolume;
+                        else if (data.symbol === "SOL/IDR") lastSolVolume24h = currentVolume; // NEW
+                        else if (data.symbol === "ADA/IDR") lastAdaVolume24h = currentVolume; // NEW
 
                         // NEW: Update the volume in the dedicated table
                         if (tableVolumeElement) {
